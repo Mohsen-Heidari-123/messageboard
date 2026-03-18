@@ -52,5 +52,4 @@ export const postMessage = async () => {
 
   return { id: newID.name, newMessage }
 }
-postMessage()
 getAll()

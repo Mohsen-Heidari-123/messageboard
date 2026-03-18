@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="module" src="js/firebase.js"></script>
-    <link rel="stylesheet" href="./css/styles.css">
+    <script type="module" src="js/script.js"></script>
+    <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="stylesheet" href="./css/formstyling.css" />
     <title>Document</title>
   </head>
   <body>
@@ -13,15 +15,25 @@
       <h1>SKY</h1>
           <header>
       <nav>
-        <a href="">home</a>
-        <a href="">random message</a>
-        <a href="">about</a>
-        <a href="">i dont know!</a>
+        <a href="">Messageboard</a>
+        <a href="">About</a>
+        <a href="">Contact</a>
       </nav>
     </header>
     <form action="">
-      <input type="text" name="message" id="" />
-      <input type="text" name="name" />
+      <input type="text" name="title" id="title" placeholder="title"/>
+      <input type="text" name="message" id="message" />
+      <input type="text" name="name" placeholder="Name"/>
+      <div>
+    <input type="radio" id="red" name="red" value="red" checked />
+    <label for="red">Red flower!</label>
+    <input type="radio" id="blue" name="blue" value="blue" checked />
+    <label for="blue">blue flower!</label>
+    <input type="radio" id="orange" name="ornage" value="oragne" checked />
+    <label for="orange">orange flower!</label>
+    <input type="radio" id="pink" name="pink" value="pink" checked />
+    <label for="pink">pink flower!</label>
+  </div>
       <button>send!!</button>
     </form>
     </div>
@@ -29,5 +41,15 @@
       <img src="img/pixelgarden.png">
     </div>
 
+<footer>
+    <div class="footer">
+        <a href="https://www.facebook.com"><img src="/img/facebook.png" alt="Facebook"></a>
+        <a href="https://www.instagram.com"><img src="/img/instagram.png" alt="Instagram"></a>
+        <a href="https://www.linkedin.com"><img src="/img/linkedin.png" alt="LinkedIn"></a>
+    </div>
+</footer>
+
+    
+    </footer>
   </body>
 </html>
