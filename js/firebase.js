@@ -1,10 +1,10 @@
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js'
 import {
-  initializeApp,
-  getDatabase
-} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js'
+  getDatabase,
+  ref
+} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js'
 
 // https://firebase.google.com/docs/web/setup#available-libraries
-
 const firebaseConfig = {
   apiKey: 'AIzaSyBYrqmRZmIQjtWQZMSynD0F2wZPWA462tc',
   authDomain: 'messageboard-77286.firebaseapp.com',
@@ -16,5 +16,34 @@ const firebaseConfig = {
   appId: '1:262402990271:web:724586d400e56438b0a60a'
 }
 const app = initializeApp(firebaseConfig)
-const database = getDatabase(app)
-console.log(database)
+const db = getDatabase(app)
+export const usersRef = ref(db, '/messages')
+const url =
+  'https://messageboard-77286-default-rtdb.europe-west1.firebasedatabase.app/messages.json'
+
+export const getAll = async () => {
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(response.status)
+  const messages = await response.json()
+  return messages
+}
+getAll()
+
+export const postMessage = async () => {
+  const newMessage = ''
+  console.log(newMessage)
+  const options = {
+    method: 'POST',
+    body: JSON.stringify(newMessage),
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    }
+  }
+
+  const response = await fetch(url, options)
+  if (!response.ok) throw new Error(response.status)
+  const newID = await response.json()
+  console.log(newID.name)
+
+  return { id: newID.name, newMessage }
+}
