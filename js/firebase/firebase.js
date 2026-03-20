@@ -30,10 +30,10 @@ export const getAll = async () => {
   return messages
 }
 
-export const postMessage = async () => {
+export const postMessage = async ({ name, message }) => {
   const newMessage = {
-    message: 'hello',
-    name: 'Charlie',
+    message,
+    name,
     likes: 0,
     dislikes: 0
   }

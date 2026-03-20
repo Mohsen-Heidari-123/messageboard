@@ -46,6 +46,117 @@
 	
 }
 
+<<<<<<< Updated upstream
+=======
+.garden-flower{
+	position: absolute;
+	width: 64px;
+	height: 64px;
+	object-fit: contain;
+	cursor: pointer;
+}
+.garden-flower:hover{
+	cursor: url(../img/cursors/cursorcan128.png) 35 100, pointer;
+	
+}
+
+#flower-popup {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.flower-popup-box {
+	background: #fff;
+	border-radius: 12px;
+	padding: 24px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+
+.flower-popup-box img {
+	width: 160px;
+	height: 160px;
+	object-fit: contain;
+}
+
+.flower-popup-name {
+	margin: 0;
+	font-size: 1.1rem;
+}
+
+.flower-popup-message {
+	margin: 0;
+	text-align: center;
+	max-width: 240px;
+}
+
+.flower-popup-close {
+	align-self: flex-end;
+	background: none;
+	border: none;
+	font-size: 1.2rem;
+	cursor: pointer;
+	line-height: 1;
+}
+
+.plant-flower-form {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 100%;
+	min-width: 240px;
+}
+
+.plant-flower-form input[type="text"] {
+	padding: 8px 12px;
+	border: 1px solid #ccc;
+	border-radius: 20px;
+	font-size: 0.95rem;
+}
+
+.plant-flower-color-label {
+	margin: 0;
+	font-weight: bold;
+	font-size: 0.9rem;
+}
+
+.plant-flower-colors {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 12px;
+	align-items: center;
+}
+
+.plant-flower-colors label {
+	cursor: pointer;
+	font-size: 0.9rem;
+}
+
+.plant-flower-form button[type="submit"] {
+	padding: 8px 20px;
+	border: none;
+	border-radius: 20px;
+	background: var(--first-color);
+	font-weight: bold;
+	cursor: pointer;
+	font-size: 1rem;
+}
+
+.plant-flower-form button[type="submit"]:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+>>>>>>> Stashed changes
 .sky-wrapper{
 	margin: 0;
 	background-image: url(../img/backgounds/skybackground.png);
