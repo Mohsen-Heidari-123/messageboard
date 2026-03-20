@@ -23,7 +23,7 @@ export const renderHeader = links => {
   const navLinks = getDefaultLinks()
   const mount = document.body
   const existingHeader = mount.querySelector('[data-generated-header="true"]')
-  if (existingHeader) return existingHeader
+  if (existingHeader) existingHeader.remove()
 
   const imagePath = isInSitesFolder()
     ? '../img/icons/pixlecloud.png'
@@ -84,8 +84,17 @@ export const initHeaderOnLoad = () => {
     document.addEventListener('DOMContentLoaded', () => renderHeader(), {
       once: true
     })
-    return
+  } else {
+    renderHeader()
   }
 
-  renderHeader()
+  // Re-render header when crossing 600px breakpoint
+  let wasLargeScreen = window.innerWidth > 600
+  window.addEventListener('resize', () => {
+    const isLargeScreen = window.innerWidth > 600
+    if (isLargeScreen !== wasLargeScreen) {
+      wasLargeScreen = isLargeScreen
+      renderHeader()
+    }
+  })
 }
