@@ -35,15 +35,49 @@ export function renderFlower (imageSrc = DEFAULT_FLOWER_IMAGE) {
   flower.style.top = randomTop
 
   garden.append(flower)
+  flower.addEventListener('click', () => openFlowerPopup(imageSrc))
 
   return flower
 }
 
-export function renderFlowers (count = 12) {
+function openFlowerPopup (imageSrc) {
+  const existing = document.getElementById('flower-popup')
+  if (existing) {
+    existing.remove()
+  }
+
+  const overlay = document.createElement('div')
+  overlay.id = 'flower-popup'
+
+  const box = document.createElement('div')
+  box.className = 'flower-popup-box'
+
+  const img = document.createElement('img')
+  img.src = imageSrc
+  img.alt = 'Flower'
+
+  const closeBtn = document.createElement('button')
+  closeBtn.textContent = '✕'
+  closeBtn.className = 'flower-popup-close'
+  closeBtn.addEventListener('click', () => overlay.remove())
+
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) {
+      overlay.remove()
+    }
+  })
+
+  box.append(closeBtn, img)
+  overlay.append(box)
+  document.body.append(overlay)
+}
+
+export function renderFlowers (count = 50) {
   const renderedFlowers = []
 
   for (let index = 0; index < count; index += 1) {
-    const randomImage = FLOWER_IMAGES[Math.floor(Math.random() * FLOWER_IMAGES.length)]
+    const randomImage =
+      FLOWER_IMAGES[Math.floor(Math.random() * FLOWER_IMAGES.length)]
     const flower = renderFlower(randomImage)
 
     if (flower) {

@@ -52,17 +52,14 @@ export const postMessage = async () => {
 
   return { id: newID.name, newMessage }
 }
-getAll()
 
-export const deleteMessagebyId = async (id) => {
-
-const singleMessageRef = ref(db,`${id}/messages`)
-try {
-  await remove(singleMessageRef)
-console.log('message deleted')
-} catch(err) {
-  console.error('message not deleted')
-throw err
-}
-     
+export const deleteMessagebyId = async id => {
+  const singleMessageRef = ref(db, `${id}/messages`)
+  try {
+    await remove(singleMessageRef)
+    console.log('message deleted')
+  } catch (err) {
+    console.error('message not deleted')
+    throw err
+  }
 }
