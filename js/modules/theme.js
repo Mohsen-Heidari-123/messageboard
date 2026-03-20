@@ -8,8 +8,6 @@ function getSavedTheme () {
 
 function applyTheme (theme) {
   const html = document.documentElement
-  const header = document.querySelector('header')
-  const garden = document.querySelector('#garden')
 
   if (theme === DARK_THEME) {
     html.setAttribute('data-theme', 'dark')
