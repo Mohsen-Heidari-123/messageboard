@@ -1,12 +1,17 @@
-const DEFAULT_FLOWER_IMAGE = 'img/flowers/redFlower.png'
+const isInSitesFolder = () =>
+  window.location.pathname.toLowerCase().includes('/sites/')
+
+const basePath = isInSitesFolder() ? '../img/flowers' : './img/flowers'
+
+const DEFAULT_FLOWER_IMAGE = `${basePath}/redFlower.png`
 const FLOWER_SIZE = 64
 const FLOWER_IMAGES = [
-  'img/flowers/blueFlower.png',
-  'img/flowers/greenFlower.png',
-  'img/flowers/pinkFlower.png',
-  'img/flowers/purpleFlower.png',
-  'img/flowers/redFlower.png',
-  'img/flowers/yellowFlower.png'
+  `${basePath}/blueFlower.png`,
+  `${basePath}/greenFlower.png`,
+  `${basePath}/pinkFlower.png`,
+  `${basePath}/purpleFlower.png`,
+  `${basePath}/redFlower.png`,
+  `${basePath}/yellowFlower.png`
 ]
 
 export function renderFlower (imageSrc = DEFAULT_FLOWER_IMAGE, data = null) {
