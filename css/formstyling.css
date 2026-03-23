@@ -101,7 +101,9 @@
   font-size: 1rem;
   cursor: pointer;
   box-shadow: 0 4px 0 #111;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
 }
 
 .username-prompt-btn:active {
@@ -130,4 +132,38 @@
   color: #4a7c59;
   cursor: pointer;
   text-decoration: underline;
+}
+.ad-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+}
+
+.ad-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.ad-container button {
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.form-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
 }
