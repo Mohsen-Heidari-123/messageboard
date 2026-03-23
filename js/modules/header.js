@@ -1,4 +1,5 @@
 import { createFlowerForm } from './messageForm.js'
+import { searchUser } from '../search.js'
 
 const isInSitesFolder = () =>
   window.location.pathname.toLowerCase().includes('/sites/')

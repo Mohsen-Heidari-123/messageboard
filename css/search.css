@@ -1,5 +1,16 @@
-#searchForm  {
+#search {
   text-align: center;
   padding-top: 20px;
+  padding-bottom: 20px;
   z-index: 10000;
+  max-height: 20px;
 }
+
+.notFound {
+  text-align: center;
+  color: white;
+  background: none;
+
+
+}
+
