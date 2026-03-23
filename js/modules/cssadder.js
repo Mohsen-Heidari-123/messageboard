@@ -11,7 +11,9 @@ export function addStyling () {
     'footer.css',
     'header.css',
     'formstyling.css',
-    'rabbit.css'
+    'rabbit.css',
+    'cabin.css',
+    'cabin-popup.css'
   ]
 
   const existingFont = document.head.querySelector(

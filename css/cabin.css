@@ -1,0 +1,13 @@
+.cabin-wrapper{
+    max-width: 25%;
+}
+
+#cabinImg{
+    max-width: 100%;
+    width: 300px;
+}
+
+#cabinImg:hover{
+    width: 340px;
+    height: auto;
+}
