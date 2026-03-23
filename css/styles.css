@@ -267,3 +267,44 @@ html.dark-mode .theme-toggle-btn {
 html.dark-mode .theme-toggle-btn:active {
 	box-shadow: 0 2px 0 #e0e0e0;
 }
+
+.theme-cycle-btn {
+	position: fixed;
+	right: 16px;
+	z-index: 1001;
+	padding: 6px 10px;
+	border: 2px solid #222;
+	border-radius: 8px;
+	background: #ffffff;
+	color: #111;
+	font-weight: 700;
+	font-size: 12px;
+	cursor: pointer;
+	box-shadow: 0 3px 0 #111;
+	transition: all 0.2s ease;
+}
+
+.theme-cycle-disable-btn {
+	top: 16px;
+}
+
+.theme-cycle-btn:active {
+	transform: translateY(2px);
+	box-shadow: 0 1px 0 #111;
+}
+
+.theme-cycle-btn:disabled {
+	opacity: 0.75;
+	cursor: default;
+}
+
+html.dark-mode .theme-cycle-btn {
+	background: #2a2a2a;
+	color: #e0e0e0;
+	border-color: #e0e0e0;
+	box-shadow: 0 3px 0 #e0e0e0;
+}
+
+html.dark-mode .theme-cycle-btn:active {
+	box-shadow: 0 1px 0 #e0e0e0;
+}

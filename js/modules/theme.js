@@ -1,6 +1,8 @@
 const THEME_KEY = 'garden-theme'
 const LIGHT_THEME = 'light'
 const DARK_THEME = 'dark'
+const THEME_CYCLE_DELAY_MS = 3 * 60 * 1000
+let themeCycleIntervalId = null
 
 function getSavedTheme () {
   return localStorage.getItem(THEME_KEY) || LIGHT_THEME
@@ -57,9 +59,32 @@ function updateToggleButton (theme) {
   }
 }
 
+function startThemeCycleTimer () {
+  if (themeCycleIntervalId !== null) {
+    return
+  }
+
+  themeCycleIntervalId = window.setInterval(() => {
+    const currentTheme = getSavedTheme()
+    const nextTheme = currentTheme === DARK_THEME ? LIGHT_THEME : DARK_THEME
+    applyTheme(nextTheme)
+    updateToggleButton(nextTheme)
+  }, THEME_CYCLE_DELAY_MS)
+}
+
+function stopThemeCycleTimer () {
+  if (themeCycleIntervalId === null) {
+    return
+  }
+
+  window.clearInterval(themeCycleIntervalId)
+  themeCycleIntervalId = null
+}
+
 export function initTheme () {
   const savedTheme = getSavedTheme()
   applyTheme(savedTheme)
+  startThemeCycleTimer()
 
   const btn = document.createElement('button')
   btn.id = 'theme-toggle-btn'
@@ -70,5 +95,23 @@ export function initTheme () {
 
   btn.addEventListener('click', toggleTheme)
 
+  const disableCycleBtn = document.createElement('button')
+  disableCycleBtn.id = 'theme-cycle-disable-btn'
+  disableCycleBtn.type = 'button'
+  disableCycleBtn.className = 'theme-cycle-btn theme-cycle-disable-btn'
+  disableCycleBtn.textContent = 'Disable day/night cycle'
+
+  disableCycleBtn.addEventListener('click', () => {
+    if (themeCycleIntervalId === null) {
+      startThemeCycleTimer()
+      disableCycleBtn.textContent = 'Disable day/night cycle'
+      return
+    }
+
+    stopThemeCycleTimer()
+    disableCycleBtn.textContent = 'Enable day/night cycle'
+  })
+
   document.body.append(btn)
+  document.body.append(disableCycleBtn)
 }
