@@ -1,4 +1,4 @@
-#spawn-rabbit-btn {
+#spawn-animal-btn {
 	position: fixed;
 	right: 16px;
 	bottom: 24px;
@@ -13,12 +13,12 @@
 	box-shadow: 0 4px 0 #111;
 }
 
-#spawn-rabbit-btn:active {
+#spawn-animal-btn:active {
 	transform: translateY(2px);
 	box-shadow: 0 2px 0 #111;
 }
 
-.garden-rabbit {
+.garden-animal {
 	position: absolute;
 	width: 48px;
 	height: 48px;

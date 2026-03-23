@@ -1,4 +1,4 @@
-const RABBIT_SIZE = 48
+const animalSize = 48
 
 const isInSitesFolder = () =>
   window.location.pathname.toLowerCase().includes('/sites/')
@@ -23,43 +23,43 @@ function randomPosition (garden, size) {
   }
 }
 
-function moveRabbit (rabbit, garden) {
-  const currentLeft = parseFloat(rabbit.style.left || '0')
-  const next = randomPosition(garden, RABBIT_SIZE)
+function moveAnimal (animal, garden) {
+  const currentLeft = parseFloat(animal.style.left || '0')
+  const next = randomPosition(garden, animalSize)
 
-  rabbit.style.left = `${next.x}px`
-  rabbit.style.top = `${next.y}px`
+  animal.style.left = `${next.x}px`
+  animal.style.top = `${next.y}px`
 
   if (next.x < currentLeft) {
-    rabbit.style.transform = 'scaleX(-1)'
+    animal.style.transform = 'scaleX(-1)'
   } else {
-    rabbit.style.transform = 'scaleX(1)'
+    animal.style.transform = 'scaleX(1)'
   }
 }
 
-function spawnRabbit (garden) {
+function spawnAnimal (garden) {
   if (!garden) {
     return
   }
 
-  const rabbit = document.createElement('img')
-  const start = randomPosition(garden, RABBIT_SIZE)
+  const animal = document.createElement('img')
+  const start = randomPosition(garden, animalSize)
   const animalSrc = getRandomAnimalSrc()
 
-  rabbit.src = animalSrc
-  rabbit.alt = 'Random garden animal'
-  rabbit.className = 'garden-rabbit'
-  rabbit.style.left = `${start.x}px`
-  rabbit.style.top = `${start.y}px`
+  animal.src = animalSrc
+  animal.alt = 'Random garden animal'
+  animal.className = 'garden-animal'
+  animal.style.left = `${start.x}px`
+  animal.style.top = `${start.y}px`
 
-  garden.append(rabbit)
+  garden.append(animal)
 
   window.setInterval(() => {
-    moveRabbit(rabbit, garden)
+    moveAnimal(animal, garden)
   }, 2000)
 }
 
-export function initRabbitControl () {
+export function initAnimalControl () {
   const garden =
     document.getElementById('garden') ??
     document.querySelector('.garden-wrapper')
@@ -68,22 +68,22 @@ export function initRabbitControl () {
     return
   }
 
-  const existingButton = document.getElementById('spawn-rabbit-btn')
+  const existingButton = document.getElementById('spawn-animal-btn')
   if (existingButton) {
     existingButton.remove()
   }
 
   const button = document.createElement('button')
-  button.id = 'spawn-rabbit-btn'
+  button.id = 'spawn-animal-btn'
   button.type = 'button'
   button.textContent = 'Spawn Animal'
 
   button.addEventListener('click', () => {
-    spawnRabbit(garden)
+    spawnAnimal(garden)
   })
 
   if (isInSitesFolder()) {
-    button.classList.add('spawn-rabbit-btn-sites')
+    button.classList.add('spawn-animal-btn-sites')
   }
 
   document.body.append(button)

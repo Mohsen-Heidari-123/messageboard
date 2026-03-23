@@ -50,6 +50,42 @@ html.dark-mode {
 	--fourth-color: var(--dark-fourth-color);
 	
 }
+html.dark-mode .theme-toggle-btn {
+	background: #2a2a2a;
+	color: #e0e0e0;
+	border-color: #e0e0e0;
+	box-shadow: 0 4px 0 #e0e0e0;
+}
+
+html.dark-mode .theme-toggle-btn:active {
+	box-shadow: 0 2px 0 #e0e0e0;
+}
+
+html.dark-mode .garden-flower {
+  filter: brightness(0.7) hue-rotate(180deg) saturate(0.8);
+}
+html.dark-mode .sky-wrapper{
+	margin: 0;
+	background-image: url(../img/backgounds/pixelnightsky.jpg);
+	width: 100%;
+	height: min(340px, 45vw);
+	min-height: 220px;
+	background-size: cover;
+	background-position: top;
+	background-repeat: no-repeat;
+}
+html.dark-mode .garden-wrapper{
+	margin: 0;
+	background-image: url(../img/backgounds/grassnight.png);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	height: 800px;
+	position: relative;
+	overflow: hidden;
+	object-fit: contain;
+	
+}
 
 *{
   margin: 0px;
@@ -214,26 +250,6 @@ html.dark-mode {
 }
 
 
-.sky-wrapper-darkmode{
-	margin: 0;
-	background-image: url(../img/backgounds/pixelnightsky.jpg);
-	width: 100%;
-	height: min(340px, 45vw);
-	min-height: 220px;
-	background-size: cover;
-	background-position: top;
-	background-repeat: no-repeat;
-}
-
-
-
-.sky-wrapper-darkmode a,
-.sky-wrapper-darkmode a:visited,
-.sky-wrapper-darkmode a:hover,
-.sky-wrapper-darkmode a:active {
-	color: var(--theme-first-color);
-	text-decoration: none;
-}
 
 .theme-toggle-btn {
 	position: fixed;

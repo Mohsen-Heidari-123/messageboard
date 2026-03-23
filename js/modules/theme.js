@@ -10,35 +10,15 @@ function getSavedTheme () {
 
 function applyTheme (theme) {
   const html = document.documentElement
-  const header = document.querySelector('header')
-  const garden = document.querySelector('#garden')
 
   if (theme === DARK_THEME) {
     html.setAttribute('data-theme', 'dark')
     html.classList.add('dark-mode')
     html.classList.remove('light-mode')
-
-    if (header) {
-      header.classList.remove('sky-wrapper')
-      header.classList.add('sky-wrapper-darkmode')
-    }
-    if (garden) {
-      garden.classList.remove('garden-wrapper{')
-      garden.classList.add('garden-wrapper-darkmode')
-    }
   } else {
     html.setAttribute('data-theme', 'light')
     html.classList.add('light-mode')
     html.classList.remove('dark-mode')
-
-    if (header) {
-      header.classList.remove('sky-wrapper-darkmode')
-      header.classList.add('sky-wrapper')
-    }
-    if (garden) {
-      garden.classList.remove('garden-wrapper-darkmode')
-      garden.classList.add('garden-wrapper{')
-    }
   }
 
   localStorage.setItem(THEME_KEY, theme)

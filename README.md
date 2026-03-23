@@ -1,5 +1,6 @@
 # Read me!!!
-
+## Pages
+https://kingtutz.github.io/gritsquare-grupp1-fe25/
 ## Garden Gathering
 Garden Gathering is a web application that is a place for people to read and post messages on a garden themed page.
 We are focused on keeping a calm and cozy vibe.
@@ -39,7 +40,7 @@ These are not strict right now and might change.
 	--flower-fifth-color: #c585b3;
 
 ## Fonts
-coming soon ...
+Heading and titles: https://fonts.google.com/specimen/Pixelify+Sans?query=pixel
 
 ## Resources
 Länk till blommornas source https://pixabay.com/illustrations/flowers-icon-pixelart-pixel-retro-9359943/

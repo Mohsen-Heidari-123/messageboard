@@ -55,13 +55,12 @@ nav a p {
     
   }
   nav {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, 80px);
     justify-content: center;
-    gap: 4px;
+    gap: 10px;
     padding: 10px 0;
   }
-  
   nav a {
     position: relative;
     display: inline-block;
@@ -75,7 +74,7 @@ nav a p {
 
   nav a p {
 	position: absolute;
-	top: 70%;
+	top: 57%;
 	left: 50%;
 	transform: translate(-50%, -50%);
 	margin: 0;
@@ -83,7 +82,7 @@ nav a p {
 	font-weight: bold;
 	text-align: center;
   z-index: 11;
-  font-size: 0.6rem;
+  font-size: 0.5rem;
 }
 }
 
@@ -91,12 +90,13 @@ nav a p {
 @media(max-width: 450px) {
   .cloud{
     width: 80px;
+
     position: absolute;
     z-index: 0;
   }
   nav {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, 80px);
     justify-content: center;
     gap: 5px;
     padding: 10px 0;
@@ -116,7 +116,7 @@ nav a p {
   nav a p {
     font-size: 0.4rem;
     position: absolute;
-    top: 40%;
+    top: 33%;
     left: 50%;
     transform: translate(-50%, -50%);
     margin: 0;
@@ -137,8 +137,8 @@ nav a p {
     z-index: 0;
   }
   nav {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, 80px);
     justify-content: center;
     gap: 5px;
     padding: 10px 0;
