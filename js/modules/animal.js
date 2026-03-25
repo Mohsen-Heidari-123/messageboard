@@ -1,4 +1,8 @@
 const animalSize = 48
+const MAX_ANIMALS = 10
+const LIMIT_PROMPT_ID = 'spawn-animal-limit-prompt'
+
+let limitPromptTimeoutId = null
 
 const isInSitesFolder = () =>
   window.location.pathname.toLowerCase().includes('/sites/')
@@ -8,7 +12,8 @@ const ANIMAL_GIFS = [
   'bee-pixel.gif',
   'fox.gif',
   'horse.gif',
-  'squrril.gif'
+  'squrril.gif',
+  'run-pikachu.gif'
 ]
 
 const basePath = isInSitesFolder() ? '../img/animals' : './img/animals'
@@ -43,8 +48,71 @@ function moveAnimal (animal, garden) {
   }
 }
 
-function spawnAnimal (garden) {
+function getAnimalCount (garden) {
+  return garden.querySelectorAll('.garden-animal').length
+}
+
+function removeLimitPrompt () {
+  const existingPrompt = document.getElementById(LIMIT_PROMPT_ID)
+  if (existingPrompt) {
+    existingPrompt.remove()
+  }
+
+  if (limitPromptTimeoutId !== null) {
+    window.clearTimeout(limitPromptTimeoutId)
+    limitPromptTimeoutId = null
+  }
+}
+
+function showLimitPrompt (button) {
+  if (!button) {
+    return
+  }
+
+  removeLimitPrompt()
+
+  const prompt = document.createElement('div')
+  prompt.id = LIMIT_PROMPT_ID
+  prompt.className = 'spawn-animal-limit-prompt'
+  prompt.textContent = `Max ${MAX_ANIMALS} animals reached`
+
+  document.body.append(prompt)
+
+  const buttonRect = button.getBoundingClientRect()
+  const promptRect = prompt.getBoundingClientRect()
+  const promptLeft = Math.max(8, buttonRect.right - promptRect.width)
+  const promptTop = Math.max(8, buttonRect.top - promptRect.height - 10)
+
+  prompt.style.left = `${promptLeft}px`
+  prompt.style.top = `${promptTop}px`
+
+  limitPromptTimeoutId = window.setTimeout(() => {
+    prompt.remove()
+    limitPromptTimeoutId = null
+  }, 1800)
+}
+
+function updateSpawnButtonState (button, garden) {
+  if (!button || !garden) {
+    return
+  }
+
+  const reachedLimit = getAnimalCount(garden) >= MAX_ANIMALS
+  button.classList.toggle('is-limit-reached', reachedLimit)
+  button.setAttribute('aria-disabled', reachedLimit ? 'true' : 'false')
+  button.title = reachedLimit
+    ? `Maximum ${MAX_ANIMALS} animals reached`
+    : 'Spawn Animal'
+}
+
+function spawnAnimal (garden, button) {
   if (!garden) {
+    return
+  }
+
+  if (getAnimalCount(garden) >= MAX_ANIMALS) {
+    updateSpawnButtonState(button, garden)
+    showLimitPrompt(button)
     return
   }
 
@@ -64,9 +132,11 @@ function spawnAnimal (garden) {
       window.clearInterval(moveIntervalId)
     }
     animal.remove()
+    updateSpawnButtonState(button, garden)
   })
 
   garden.append(animal)
+  updateSpawnButtonState(button, garden)
 
   moveIntervalId = window.setInterval(() => {
     moveAnimal(animal, garden)
@@ -93,22 +163,9 @@ export function initAnimalControl () {
   button.textContent = 'Spawn Animal'
 
   button.addEventListener('click', () => {
-    spawnAnimal(garden)
+    spawnAnimal(garden, button)
   })
 
-  // Try to add to hamburger menu, fallback to body
-  const menuContent = document.querySelector('.hamburger-menu-content')
-  if (menuContent) {
-    const spawnAnimalSlot = menuContent.querySelector('.menu-spawn-animal-slot')
-    if (spawnAnimalSlot) {
-      spawnAnimalSlot.replaceChildren(button)
-    } else {
-      menuContent.append(button)
-    }
-  } else {
-    if (isInSitesFolder()) {
-      button.classList.add('spawn-animal-btn-sites')
-    }
-    document.body.append(button)
-  }
+  document.body.append(button)
+  updateSpawnButtonState(button, garden)
 }

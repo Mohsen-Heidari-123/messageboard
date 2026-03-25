@@ -1,5 +1,8 @@
-import { getAll } from './firebase/firebase.js'
-import { renderFlowers, syncRenderedFlowerTheme } from './rendering/renderflowers.js'
+import { subscribeToMessages } from './firebase/firebase.js'
+import {
+  renderFlowers,
+  syncRenderedFlowerTheme
+} from './rendering/renderflowers.js'
 import { initHeaderOnLoad } from './modules/header.js'
 import { addStyling } from './modules/cssadder.js'
 import { initAnimalControl } from './modules/animal.js'
@@ -31,8 +34,9 @@ async function initPage () {
   await initUsernamePrompt()
   initAnimalControl()
   initCabin()
-  const data = await getAll()
-  renderFlowers(data)
+  subscribeToMessages(data => {
+    renderFlowers(data)
+  })
 }
 
 initPage()

@@ -2,7 +2,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.10.0/fireba
 import {
   getDatabase,
   ref,
-  remove
+  onValue
 } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js'
 
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -21,6 +21,8 @@ const db = getDatabase(app)
 export const usersRef = ref(db, '/messages')
 const url =
   'https://messageboard-77286-default-rtdb.europe-west1.firebasedatabase.app/messages.json'
+const messagesBaseUrl =
+  'https://messageboard-77286-default-rtdb.europe-west1.firebasedatabase.app/messages'
 
 export const getAll = async () => {
   const response = await fetch(url)
@@ -30,6 +32,17 @@ export const getAll = async () => {
   return messages
 }
 
+export const subscribeToMessages = onData => {
+  if (typeof onData !== 'function') {
+    return () => {}
+  }
+
+  const messagesRef = ref(db, '/messages')
+  return onValue(messagesRef, snapshot => {
+    onData(snapshot.val() || {})
+  })
+}
+
 export const postMessage = async (message, name, title) => {
   const newMessage = {
     message: message,
@@ -37,7 +50,8 @@ export const postMessage = async (message, name, title) => {
     title: title,
     likes: 0,
     dislikes: 0,
-    answer: { name: '', message: '', likes: 0, dislikes: 0 }
+    answer: { name: '', message: '', likes: 0, dislikes: 0 },
+    replies: []
   }
   const options = {
     method: 'POST',
@@ -55,28 +69,70 @@ export const postMessage = async (message, name, title) => {
   return { id: newID.name, newMessage }
 }
 
+export const postReply = async (postId, message, name) => {
+  const cleanPostId = String(postId || '').trim()
+  if (!cleanPostId) {
+    throw new Error('Missing post id')
+  }
+
+  const replyPayload = {
+    name,
+    message,
+    likes: 0,
+    dislikes: 0
+  }
+
+  const response = await fetch(
+    `${messagesBaseUrl}/${encodeURIComponent(cleanPostId)}/replies.json`,
+    {
+      method: 'POST',
+      body: JSON.stringify(replyPayload),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8'
+      }
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(response.status)
+  }
+
+  const created = await response.json()
+  return {
+    ...replyPayload,
+    id: created?.name || ''
+  }
+}
+
 const usersUrl =
   'https://messageboard-77286-default-rtdb.europe-west1.firebasedatabase.app/users'
 
 export const registerUser = async (username, password) => {
-  const checkResponse = await fetch(`${usersUrl}/${encodeURIComponent(username)}.json`)
+  const checkResponse = await fetch(
+    `${usersUrl}/${encodeURIComponent(username)}.json`
+  )
   if (!checkResponse.ok) throw new Error(checkResponse.status)
   const existing = await checkResponse.json()
   if (existing !== null) {
     throw new Error('Username already taken')
   }
 
-  const putResponse = await fetch(`${usersUrl}/${encodeURIComponent(username)}.json`, {
-    method: 'PUT',
-    body: JSON.stringify({ password }),
-    headers: { 'Content-type': 'application/json; charset=UTF-8' }
-  })
+  const putResponse = await fetch(
+    `${usersUrl}/${encodeURIComponent(username)}.json`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ password }),
+      headers: { 'Content-type': 'application/json; charset=UTF-8' }
+    }
+  )
   if (!putResponse.ok) throw new Error(putResponse.status)
   return putResponse.json()
 }
 
 export const loginUser = async (username, password) => {
-  const response = await fetch(`${usersUrl}/${encodeURIComponent(username)}.json`)
+  const response = await fetch(
+    `${usersUrl}/${encodeURIComponent(username)}.json`
+  )
   if (!response.ok) throw new Error(response.status)
   const user = await response.json()
   if (user === null) {
@@ -88,10 +144,37 @@ export const loginUser = async (username, password) => {
   return true
 }
 
+export const isUserAdmin = async username => {
+  const cleanUsername = String(username || '').trim()
+  if (!cleanUsername) {
+    return false
+  }
+
+  const response = await fetch(
+    `${usersUrl}/${encodeURIComponent(cleanUsername)}.json`
+  )
+  if (!response.ok) {
+    throw new Error(response.status)
+  }
+
+  const user = await response.json()
+  return Boolean(user?.admin)
+}
+
 export const deleteMessagebyId = async id => {
-  const singleMessageRef = ref(db, `${id}/messages`)
+  const cleanId = String(id || '').trim()
+  if (!cleanId) {
+    throw new Error('Missing message id')
+  }
+
   try {
-    await remove(singleMessageRef)
+    const response = await fetch(
+      `${messagesBaseUrl}/${encodeURIComponent(cleanId)}.json`,
+      { method: 'DELETE' }
+    )
+    if (!response.ok) {
+      throw new Error(response.status)
+    }
     console.log('message deleted')
   } catch (err) {
     console.error('message not deleted')
@@ -100,14 +183,14 @@ export const deleteMessagebyId = async id => {
 }
 
 // Get all posts by a specific user
-export const getUserPosts = async (username) => {
+export const getUserPosts = async username => {
   try {
     const response = await fetch(url)
     if (!response.ok) throw new Error(response.status)
     const messages = await response.json()
-    
+
     if (!messages) return {}
-    
+
     const userPosts = {}
     Object.entries(messages).forEach(([id, message]) => {
       if (message.name === username) {
@@ -122,26 +205,28 @@ export const getUserPosts = async (username) => {
 }
 
 // Get user's liked posts
-export const getUserLikedPosts = async (username) => {
+export const getUserLikedPosts = async username => {
   try {
-    const response = await fetch(`${usersUrl}/${encodeURIComponent(username)}.json`)
+    const response = await fetch(
+      `${usersUrl}/${encodeURIComponent(username)}.json`
+    )
     if (!response.ok) throw new Error(response.status)
     const user = await response.json()
-    
+
     if (!user || !user['liked-posts']) return {}
-    
+
     // Fetch all messages to get full post data
     const messagesResponse = await fetch(url)
     if (!messagesResponse.ok) throw new Error(messagesResponse.status)
     const allMessages = await messagesResponse.json()
-    
+
     const likedPosts = {}
     Object.keys(user['liked-posts']).forEach(postId => {
       if (allMessages[postId]) {
         likedPosts[postId] = allMessages[postId]
       }
     })
-    
+
     return likedPosts
   } catch (error) {
     console.error('Error fetching liked posts:', error)
@@ -153,7 +238,9 @@ export const getUserLikedPosts = async (username) => {
 export const likePost = async (username, postId) => {
   try {
     const putResponse = await fetch(
-      `${usersUrl}/${encodeURIComponent(username)}/liked-posts/${encodeURIComponent(postId)}.json`,
+      `${usersUrl}/${encodeURIComponent(
+        username
+      )}/liked-posts/${encodeURIComponent(postId)}.json`,
       {
         method: 'PUT',
         body: JSON.stringify({}),
@@ -161,7 +248,7 @@ export const likePost = async (username, postId) => {
       }
     )
     if (!putResponse.ok) throw new Error(putResponse.status)
-    
+
     // Also update the like count on the post
     await updatePostLikes(postId, 1)
     return true
@@ -175,11 +262,13 @@ export const likePost = async (username, postId) => {
 export const unlikePost = async (username, postId) => {
   try {
     const deleteResponse = await fetch(
-      `${usersUrl}/${encodeURIComponent(username)}/liked-posts/${encodeURIComponent(postId)}.json`,
+      `${usersUrl}/${encodeURIComponent(
+        username
+      )}/liked-posts/${encodeURIComponent(postId)}.json`,
       { method: 'DELETE' }
     )
     if (!deleteResponse.ok) throw new Error(deleteResponse.status)
-    
+
     // Also update the like count on the post
     await updatePostLikes(postId, -1)
     return true
@@ -195,9 +284,9 @@ export const updatePostLikes = async (postId, increment) => {
     const response = await fetch(`${url}/${encodeURIComponent(postId)}.json`)
     if (!response.ok) throw new Error(response.status)
     const post = await response.json()
-    
+
     const newLikes = (post.likes || 0) + increment
-    
+
     const updateResponse = await fetch(
       `${url}/${encodeURIComponent(postId)}/likes.json`,
       {

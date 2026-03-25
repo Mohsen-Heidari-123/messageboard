@@ -29,6 +29,43 @@ html.dark-mode #spawn-animal-btn:active {
 	box-shadow: 0 2px 0 #e0e0e0;
 }
 
+#spawn-animal-btn.is-limit-reached {
+	opacity: 0.85;
+}
+
+.spawn-animal-limit-prompt {
+	position: fixed;
+	z-index: calc(var(--z-floating-ui) + 1);
+	padding: 8px 10px;
+	border: 2px solid #222;
+	border-radius: 8px;
+	background: #fff7d6;
+	color: #111;
+	font-size: 0.875rem;
+	font-weight: 700;
+	box-shadow: 0 3px 0 #111;
+	pointer-events: none;
+	animation: spawn-limit-pop 0.2s ease-out;
+}
+
+html.dark-mode .spawn-animal-limit-prompt {
+	background: #3a3320;
+	color: #f2f2f2;
+	border-color: #e0e0e0;
+	box-shadow: 0 3px 0 #e0e0e0;
+}
+
+@keyframes spawn-limit-pop {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
 .garden-animal {
 	position: absolute;
 	width: 48px;

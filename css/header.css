@@ -334,18 +334,18 @@ html.dark-mode .hamburger-menu-content {
 }
 
 html.dark-mode .hamburger-menu-content button {
-  background-color: #2a2a2a !important;
+  background-color: #2a2a2a;
   color: #e0e0e0;
   border-color: #e0e0e0;
-  box-shadow: 0 4px 0 #e0e0e0 !important;
+  box-shadow: 0 4px 0 #e0e0e0;
 }
 
 html.dark-mode .hamburger-menu-content button:active {
-  box-shadow: 0 2px 0 #e0e0e0 !important;
+  box-shadow: 0 2px 0 #e0e0e0;
 }
 
 html.dark-mode .hamburger-menu-content button:hover {
-  background-color: #3a3a3a !important;
+  background-color: #3a3a3a;
 }
 
 /* Reset fixed positioning for buttons placed inside the menu */
