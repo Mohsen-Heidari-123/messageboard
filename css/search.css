@@ -1,5 +1,119 @@
-#searchForm  {
-  text-align: center;
-  padding-top: 20px;
-  z-index: 10000;
+header[data-generated-header='true'] {
+  position: relative;
+}
+
+#searchForm {
+  position: absolute;
+  left: 50%;
+  top: 1.5rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid #222;
+  border-radius: 12px;
+  box-shadow: 0 4px 0 #111;
+  z-index: var(--z-floating-ui);
+}
+
+#searchForm input {
+  min-width: min(280px, 52vw);
+  padding: 0.65rem 0.85rem;
+  border: 2px solid #222;
+  border-radius: 10px;
+  font: inherit;
+}
+
+#searchForm button {
+  padding: 0.65rem 1rem;
+  border: 2px solid #222;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #111;
+}
+
+#searchForm button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #111;
+}
+
+.search-close-btn {
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #222;
+  border-radius: 10px;
+  background: #fff3cc;
+  color: #4e341f;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #4e341f;
+  flex-shrink: 0;
+}
+
+.search-close-btn:hover {
+  background: #ffe499;
+}
+
+.search-close-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #4e341f;
+}
+
+html.dark-mode .search-close-btn {
+  background: #3a2a10;
+  color: #f0d090;
+  border-color: #f0d090;
+  box-shadow: 0 4px 0 #f0d090;
+}
+
+html.dark-mode .search-close-btn:hover {
+  background: #4e3a1a;
+}
+
+html.dark-mode .search-close-btn:active {
+  box-shadow: 0 2px 0 #f0d090;
+}
+
+html.dark-mode #searchForm {
+  background: rgba(42, 42, 42, 0.94);
+  border-color: #e0e0e0;
+  box-shadow: 0 4px 0 #e0e0e0;
+}
+
+html.dark-mode #searchForm input,
+html.dark-mode #searchForm button {
+  background: #2a2a2a;
+  color: #e0e0e0;
+  border-color: #e0e0e0;
+  box-shadow: 0 4px 0 #e0e0e0;
+}
+
+html.dark-mode #searchForm button:active {
+  box-shadow: 0 2px 0 #e0e0e0;
+}
+
+@media (max-width: 600px) {
+  #searchForm {
+    width: calc(100% - 2rem);
+    max-width: 360px;
+    gap: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    margin-top: 2.5rem;
+  }
+
+  #searchForm input {
+    min-width: 0;
+    width: 100%;
+  }
 }

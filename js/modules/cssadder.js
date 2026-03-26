@@ -12,6 +12,8 @@ export function addStyling () {
     'header.css',
     'formstyling.css',
     'rabbit.css',
+    'cabin.css',
+    'cabin-popup.css',
     'search.css'
   ]
 

@@ -1,0 +1,34 @@
+{
+  "messages": {
+    "-OoQ7PTppGFQp5X_TUGA": {
+      "answer": {
+        "dislikes": 0,
+        "likes": 0,
+        "message": "",
+        "name": ""
+      },
+      "dislikes": 0,
+      "likes": 0,
+      "message": "Test för firebase",
+      "name": "David",
+      "title": "Test firebase"
+    }
+  },
+  "users": {
+    "David": {
+      "liked-posts": {
+        "id": "hdhuefiufui22ujke"
+      },
+      "password": "Ratatouille",
+      "posts": {
+        "id": "hhuhsdhjfsdh22duhd"
+      }
+    },
+    "jack": {
+      "password": "123456"
+    },
+    "mohsen": {
+      "password": "123123"
+    }
+  }
+}
