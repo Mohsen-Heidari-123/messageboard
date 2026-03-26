@@ -2,11 +2,14 @@ import {
   postReply,
   deleteMessagebyId,
   isUserAdmin,
-  LikeMessage,
-  disLikeMessage
+  disLikeMessage,
+  likePost,
+  unlikePost,
+  getUserLikedPosts
 } from '../firebase/firebase.js'
 import { censorBadWords } from '../modules/censor.js'
 import { getUsername } from '../modules/username.js'
+import { createReactionIcon, setElementTextWithEmojis } from '../modules/emojis.js'
 
 const isInSitesFolder = () =>
   window.location.pathname.toLowerCase().includes('/sites/')
@@ -465,7 +468,7 @@ function buildReplyElement(replyData) {
 
   const replyText = document.createElement('p')
   replyText.className = 'flower-popup-reply-message'
-  replyText.textContent = replyData.message
+  setElementTextWithEmojis(replyText, replyData.message, { size: 16 })
 
   const replyMeta = document.createElement('p')
   replyMeta.className = 'flower-popup-reply-meta'
@@ -734,20 +737,57 @@ function openFlowerPopup(imageSrc, data, postId) {
       message.textContent = data.title
       box.append(message)
     }
-    if (data.likes !== undefined) {
+    const currentUser = getUsername().trim()
+    const isOwnPost = Boolean(currentUser) && data?.name === currentUser
+
+    if (data.likes !== undefined && !isOwnPost && currentUser) {
       const existingLike = box.querySelector('.flower-like-btn')
       if (existingLike) existingLike.remove()
       const like = document.createElement('button')
       like.className = 'flower-like-btn'
-      like.innerHTML = `👍 ${data.likes || 0}`
+      let isLiked = false
 
-      like.addEventListener('click', e => {
+      const renderLikeLabel = () => {
+        const likes = Math.max(data?.likes || 0, 0)
+        like.replaceChildren(
+          createReactionIcon('heart', { active: isLiked, size: 18 }),
+          Object.assign(document.createElement('span'), {
+            className: 'flower-reaction-count',
+            textContent: String(likes)
+          })
+        )
+      }
+
+      renderLikeLabel()
+
+      getUserLikedPosts(currentUser)
+        .then(likedPosts => {
+          isLiked = Boolean(likedPosts?.[postId])
+          renderLikeLabel()
+        })
+        .catch(() => {
+          renderLikeLabel()
+        })
+
+      like.addEventListener('click', async e => {
         e.preventDefault()
-        LikeMessage(postId, data.likes)
-        data.likes += 1
-        like.innerHTML = `👍 ${data.likes || 0}`
+        try {
+          if (isLiked) {
+            await unlikePost(currentUser, postId)
+            data.likes = Math.max((data?.likes || 0) - 1, 0)
+            isLiked = false
+          } else {
+            await likePost(currentUser, postId)
+            data.likes = (data?.likes || 0) + 1
+            isLiked = true
+          }
 
+          renderLikeLabel()
+        } catch (error) {
+          console.error('Error toggling like:', error)
+        }
       })
+
       box.append(like)
     }
     if (data.dislikes !== undefined) {
@@ -755,21 +795,30 @@ function openFlowerPopup(imageSrc, data, postId) {
       if (existingLike) existingLike.remove()
       const dislike = document.createElement('button')
       dislike.className = 'flower-dislike-btn'
-      dislike.innerHTML = `👎 ${data.dislikes || 0}`
+      const renderDislikeLabel = () => {
+        dislike.replaceChildren(
+          createReactionIcon('dislike', { size: 18 }),
+          Object.assign(document.createElement('span'), {
+            className: 'flower-reaction-count',
+            textContent: String(data.dislikes || 0)
+          })
+        )
+      }
+
+      renderDislikeLabel()
 
       dislike.addEventListener('click', e => {
         e.preventDefault()
         disLikeMessage(postId, data.dislikes)
         data.dislikes += 1
-        dislike.innerHTML = `👎 ${data.dislikes || 0}`
-
+        renderDislikeLabel()
       })
       box.append(dislike)
     }
     if (data.message) {
       const message = document.createElement('p')
       message.className = 'flower-popup-message'
-      message.textContent = data.message
+      setElementTextWithEmojis(message, data.message, { size: 18 })
       box.append(message)
       const repliesContainer = document.createElement('div')
       repliesContainer.className = 'flower-popup-replies'

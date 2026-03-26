@@ -7,7 +7,7 @@
 #cabinImg{
     max-width: 100%;
     width: 400px;
-	transition: filter var(--theme-fade-duration, 560ms) ease;
+	transition: filter var(--theme-fade-duration, 560ms) ease, transform 0.2s ease;
 }
 
 html.dark-mode #cabinImg {
@@ -15,8 +15,7 @@ html.dark-mode #cabinImg {
 }
 
 #cabinImg:hover{
-    width: 340px;
-    height: auto;
+    transform: scale(1.06);
 }
 
 @media (max-width: 600px) {

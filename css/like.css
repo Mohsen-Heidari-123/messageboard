@@ -1,17 +1,52 @@
 .flower-like-btn {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
+    background: #fff3cc;
+    border: 2px solid #4e341f;
+    border-radius: 8px;
+    padding: 7px 12px;
+    margin: 0 8px 12px 0;
     cursor: pointer;
     font-size: inherit;
+    color: #3b2515;
+    font-weight: 700;
+    box-shadow: 0 3px 0 #4e341f;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .flower-dislike-btn {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
+    background: #e8d0bf;
+    border: 2px solid #4e341f;
+    border-radius: 8px;
+    padding: 7px 12px;
+    margin: 0 8px 12px 0;
     cursor: pointer;
     font-size: inherit;
+    color: #3b2515;
+    font-weight: 700;
+    box-shadow: 0 3px 0 #4e341f;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.flower-like-btn:hover {
+    background: #ffe6aa;
+}
+
+.flower-dislike-btn:hover {
+    background: #ddc1ae;
+}
+
+.flower-like-btn:active,
+.flower-dislike-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #4e341f;
+}
+
+.flower-reaction-count {
+    min-width: 1ch;
+    text-align: center;
 }

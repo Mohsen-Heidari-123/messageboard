@@ -3,10 +3,96 @@ const isInSitesFolder = () =>
   window.location.pathname.toLowerCase().includes('/sites/')
 
 const basePath = isInSitesFolder() ? '../img/cabin' : './img/cabin'
+const soundBasePath = isInSitesFolder() ? '../sounds' : './sounds'
+const cabinDoorSoundPath = `${soundBasePath}/cabinopen.mp3`
 
-import { postMessage, getUserPosts, getUserLikedPosts, likePost, unlikePost } from '../firebase/firebase.js'
+let cabinDoorAudio = null
+let cabinDoorReverseBuffer = null
+let cabinDoorAudioContext = null
+
+import {
+  postMessage,
+  postReply,
+  getUserPosts,
+  getUserLikedPosts,
+  likePost,
+  unlikePost
+} from '../firebase/firebase.js'
 import { censorBadWords } from './censor.js'
 import { getUsername } from './username.js'
+import { createReactionIcon, setElementTextWithEmojis } from './emojis.js'
+
+function playCabinDoorSound() {
+  if (!cabinDoorAudio) {
+    cabinDoorAudio = new Audio(cabinDoorSoundPath)
+    cabinDoorAudio.preload = 'auto'
+    cabinDoorAudio.volume = 0.22
+  }
+
+  try {
+    cabinDoorAudio.currentTime = 0
+  } catch {
+    // Ignore seek errors if audio metadata is not ready yet.
+  }
+
+  cabinDoorAudio.play().catch(() => {})
+}
+
+async function getCabinDoorReverseBuffer() {
+  if (cabinDoorReverseBuffer) {
+    return cabinDoorReverseBuffer
+  }
+
+  if (!cabinDoorAudioContext) {
+    cabinDoorAudioContext = new window.AudioContext()
+  }
+
+  if (cabinDoorAudioContext.state === 'suspended') {
+    await cabinDoorAudioContext.resume()
+  }
+
+  const response = await fetch(cabinDoorSoundPath)
+  const arrayBuffer = await response.arrayBuffer()
+  const decoded = await cabinDoorAudioContext.decodeAudioData(arrayBuffer)
+
+  const reversedBuffer = cabinDoorAudioContext.createBuffer(
+    decoded.numberOfChannels,
+    decoded.length,
+    decoded.sampleRate
+  )
+
+  for (let channel = 0; channel < decoded.numberOfChannels; channel += 1) {
+    const source = decoded.getChannelData(channel)
+    const target = reversedBuffer.getChannelData(channel)
+
+    for (let i = 0; i < decoded.length; i += 1) {
+      target[i] = source[decoded.length - 1 - i]
+    }
+  }
+
+  cabinDoorReverseBuffer = reversedBuffer
+  return cabinDoorReverseBuffer
+}
+
+async function playCabinDoorSoundReverse() {
+  try {
+    const buffer = await getCabinDoorReverseBuffer()
+    const source = cabinDoorAudioContext.createBufferSource()
+    const gain = cabinDoorAudioContext.createGain()
+    const now = cabinDoorAudioContext.currentTime
+    const targetGain = 0.18
+
+    // Smooth the first ~120ms to remove the sharp transient at start.
+    gain.gain.setValueAtTime(0, now)
+    gain.gain.linearRampToValueAtTime(targetGain, now + 0.12)
+    source.buffer = buffer
+    source.connect(gain)
+    gain.connect(cabinDoorAudioContext.destination)
+    source.start(0)
+  } catch {
+    // Ignore sound errors so popup close flow is never blocked.
+  }
+}
 
 export function initCabin() {
   const cabinImg = document.getElementById('cabinImg')
@@ -18,7 +104,10 @@ export function initCabin() {
 
   // Make cabin wrapper clickable
   cabinWrapper.style.cursor = 'pointer'
-  cabinWrapper.addEventListener('click', openCabinPopup)
+  cabinWrapper.addEventListener('click', () => {
+    playCabinDoorSound()
+    openCabinPopup()
+  })
 }
 
 function openCabinPopup() {
@@ -65,9 +154,49 @@ function openCabinPopup() {
   const closeBtn = document.createElement('button')
   closeBtn.textContent = '✕'
   closeBtn.className = 'cabin-popup-close'
-  closeBtn.addEventListener('click', () => overlay.remove())
+  closeBtn.setAttribute('aria-label', 'Close cabin popup')
 
-  header.append(userInfo, closeBtn)
+  const cabinReadabilityBtn = document.createElement('button')
+  cabinReadabilityBtn.type = 'button'
+  cabinReadabilityBtn.className = 'cabin-reading-btn'
+  cabinReadabilityBtn.textContent = 'Lamp'
+  cabinReadabilityBtn.setAttribute('aria-pressed', 'false')
+  cabinReadabilityBtn.setAttribute('aria-label', 'Toggle cabin readability mode')
+
+  cabinReadabilityBtn.addEventListener('click', () => {
+    const nextState = !overlay.classList.contains('cabin-local-dark')
+    overlay.classList.toggle('cabin-local-dark', nextState)
+    cabinReadabilityBtn.setAttribute('aria-pressed', String(nextState))
+    cabinReadabilityBtn.textContent = nextState ? 'Lamp on' : 'Lamp'
+  })
+
+  let isRemoved = false
+  const removeOverlay = () => {
+    if (isRemoved) {
+      return
+    }
+
+    isRemoved = true
+    document.removeEventListener('keydown', onKeyDown)
+    playCabinDoorSoundReverse()
+    overlay.remove()
+    window.dispatchEvent(new CustomEvent('garden:cabin-closed'))
+  }
+
+  const onKeyDown = event => {
+    if (event.key === 'Escape') {
+      removeOverlay()
+    }
+  }
+
+  document.addEventListener('keydown', onKeyDown)
+  closeBtn.addEventListener('click', removeOverlay)
+
+  const headerActions = document.createElement('div')
+  headerActions.className = 'cabin-popup-header-actions'
+  headerActions.append(cabinReadabilityBtn, closeBtn)
+
+  header.append(userInfo, headerActions)
 
   // Main content container with two columns
   const hubContainer = document.createElement('div')
@@ -144,12 +273,13 @@ function openCabinPopup() {
   // Close on background click
   overlay.addEventListener('click', event => {
     if (event.target === overlay) {
-      overlay.remove()
+      removeOverlay()
     }
   })
 
   overlay.append(cabinContainer)
   document.body.append(overlay)
+  window.dispatchEvent(new CustomEvent('garden:cabin-opened'))
 }
 
 async function loadHubContent(username, postsList, likedList, hubContainer) {
@@ -189,11 +319,15 @@ function displayPostsList(postsData, container, username, hubContainer) {
 
     const title = document.createElement('p')
     title.textContent = postData.title || 'Untitled'
-    title.style.margin = '0'
+    title.style.margin = '0 0 4px 0'
     title.style.fontWeight = 'bold'
     title.style.color = '#333'
 
-    postItem.append(title)
+    const meta = document.createElement('p')
+    meta.className = 'cabin-post-item-meta'
+    meta.textContent = `${getReplyCount(postData)} replies`
+
+    postItem.append(title, meta)
     postItem.addEventListener('click', () => {
       showPostDetail(postData, postId, username, hubContainer)
     })
@@ -238,7 +372,8 @@ function displayLikedList(likedData, container, username, hubContainer) {
     title.style.color = '#333'
 
     const author = document.createElement('p')
-    author.textContent = `by ${postData.name}`
+    author.textContent = `by ${postData.name} • ${getReplyCount(postData)} replies`
+    author.className = 'cabin-liked-item-meta'
     author.style.margin = '0'
     author.style.fontSize = '12px'
     author.style.color = '#666'
@@ -275,17 +410,9 @@ function showPostDetail(postData, postId, username, hubContainer) {
 
   // Back button
   const backBtn = document.createElement('button')
-  backBtn.textContent = '← Back'
   backBtn.type = 'button'
-  backBtn.style.alignSelf = 'flex-start'
-  backBtn.style.padding = '8px 12px'
-  backBtn.style.backgroundColor = '#A0826D'
-  backBtn.style.color = 'white'
-  backBtn.style.border = 'none'
-  backBtn.style.borderRadius = '4px'
-  backBtn.style.cursor = 'pointer'
-  backBtn.style.fontSize = '14px'
-  backBtn.style.marginBottom = '12px'
+  backBtn.className = 'cabin-nav-btn'
+  setPixelButtonContent(backBtn, 'pixel-icon-arrow-left', 'Back')
   backBtn.addEventListener('click', () => {
     detailContainer.remove()
     hubContainer.style.display = 'flex'
@@ -305,46 +432,128 @@ function showPostDetail(postData, postId, username, hubContainer) {
   author.style.fontStyle = 'italic'
 
   const message = document.createElement('p')
-  message.textContent = postData.message
+  setElementTextWithEmojis(message, postData.message, { size: 18 })
   message.style.margin = '0 0 16px 0'
   message.style.lineHeight = '1.6'
   message.style.color = '#333'
 
-  // Like/Unlike button
-  const likeBtn = document.createElement('button')
-  likeBtn.type = 'button'
-  likeBtn.style.padding = '8px 16px'
-  likeBtn.style.backgroundColor = '#FFB347'
-  likeBtn.style.color = '#333'
-  likeBtn.style.border = 'none'
-  likeBtn.style.borderRadius = '4px'
-  likeBtn.style.cursor = 'pointer'
-  likeBtn.style.fontSize = '14px'
-  likeBtn.style.marginBottom = '12px'
-  likeBtn.style.alignSelf = 'flex-start'
-  
-  // Check if already liked
-  checkIfLiked(postId, username).then(isLiked => {
-    likeBtn.textContent = isLiked ? '❤️ Liked' : '🤍 Like'
-    likeBtn.addEventListener('click', async () => {
-      try {
-        if (isLiked) {
-          await unlikePost(username, postId)
-          likeBtn.textContent = '🤍 Like'
-          isLiked = false
-        } else {
-          await likePost(username, postId)
-          likeBtn.textContent = '❤️ Liked'
-          isLiked = true
-        }
-      } catch (error) {
-        console.error('Error toggling like:', error)
-        alert('Error updating like status')
+  const actionsRow = document.createElement('div')
+  actionsRow.className = 'cabin-post-actions'
+
+  const copyBtn = document.createElement('button')
+  copyBtn.type = 'button'
+  copyBtn.className = 'cabin-post-copy-btn'
+  copyBtn.textContent = 'Copy post'
+  copyBtn.addEventListener('click', async () => {
+    const copyText = [
+      `Title: ${postData.title || 'Untitled'}`,
+      `By: ${postData.name || 'Unknown'}`,
+      '',
+      `${postData.message || ''}`
+    ].join('\n')
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(copyText)
+      } else {
+        const helper = document.createElement('textarea')
+        helper.value = copyText
+        document.body.append(helper)
+        helper.select()
+        document.execCommand('copy')
+        helper.remove()
       }
-    })
+
+      copyBtn.textContent = 'Copied!'
+      window.setTimeout(() => {
+        copyBtn.textContent = 'Copy post'
+      }, 1200)
+    } catch {
+      copyBtn.textContent = 'Copy failed'
+      window.setTimeout(() => {
+        copyBtn.textContent = 'Copy post'
+      }, 1200)
+    }
   })
 
-  detailContainer.append(backBtn, title, author, message, likeBtn)
+  const repliesSection = document.createElement('section')
+  repliesSection.className = 'cabin-post-replies'
+
+  const repliesTitle = document.createElement('h4')
+  repliesTitle.className = 'cabin-post-replies-title'
+  repliesTitle.textContent = 'Replies'
+
+  const repliesList = document.createElement('div')
+  repliesList.className = 'cabin-post-replies-list'
+
+  const renderReplies = () => {
+    repliesList.replaceChildren()
+    const replies = getReplyList(postData)
+
+    if (replies.length === 0) {
+      const empty = document.createElement('p')
+      empty.className = 'cabin-post-replies-empty'
+      empty.textContent = 'No replies yet.'
+      repliesList.append(empty)
+      return
+    }
+
+    replies.forEach(reply => {
+      repliesList.append(buildCabinReplyElement(reply, username))
+    })
+  }
+
+  renderReplies()
+  repliesSection.append(repliesTitle, repliesList)
+
+  const replyForm = buildCabinReplyForm({
+    postId,
+    postData,
+    username,
+    onReplySaved: renderReplies
+  })
+
+  const isOwnPost = postData?.name === username
+  if (!isOwnPost) {
+    // Like/Unlike button
+    const likeBtn = document.createElement('button')
+    likeBtn.type = 'button'
+    likeBtn.className = 'cabin-like-btn'
+
+    // Check if already liked
+    checkIfLiked(postId, username).then(isLiked => {
+      updateCabinLikeButton(likeBtn, isLiked)
+      likeBtn.addEventListener('click', async () => {
+        try {
+          if (isLiked) {
+            await unlikePost(username, postId)
+            isLiked = false
+          } else {
+            await likePost(username, postId)
+            isLiked = true
+          }
+
+          updateCabinLikeButton(likeBtn, isLiked)
+
+          const postsList = hubContainer.querySelector('.cabin-posts-list')
+          const likedList = hubContainer.querySelector('.cabin-liked-list')
+          if (postsList && likedList) {
+            loadHubContent(username, postsList, likedList, hubContainer)
+          }
+        } catch (error) {
+          console.error('Error toggling like:', error)
+          alert('Error updating like status')
+        }
+      })
+    })
+
+    actionsRow.append(copyBtn, likeBtn)
+    detailContainer.append(backBtn, title, author, message, repliesSection, replyForm, actionsRow)
+  } else {
+    actionsRow.append(copyBtn)
+    detailContainer.append(backBtn, title, author, message, repliesSection, replyForm, actionsRow)
+  }
+
   hubContainer.parentElement.append(detailContainer)
 }
 
@@ -356,6 +565,184 @@ async function checkIfLiked(postId, username) {
     console.error('Error checking like status:', error)
     return false
   }
+}
+
+function normalizeReply(entry) {
+  if (!entry || typeof entry !== 'object') {
+    return null
+  }
+
+  const name = String(entry.name || '').trim()
+  const message = String(entry.message || '').trim()
+
+  if (!name || !message) {
+    return null
+  }
+
+  return {
+    id: String(entry.id || ''),
+    name,
+    message,
+    createdAt:
+      typeof entry.createdAt === 'number' && Number.isFinite(entry.createdAt)
+        ? entry.createdAt
+        : 0
+  }
+}
+
+function normalizeUserName(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+}
+
+function formatTimestamp(timestamp) {
+  if (!timestamp || !Number.isFinite(timestamp)) {
+    return 'unknown time'
+  }
+
+  try {
+    return new Date(timestamp).toLocaleString('sv-SE', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch {
+    return 'unknown time'
+  }
+}
+
+function getReplyList(postData) {
+  const replies = []
+
+  if (Array.isArray(postData?.replies)) {
+    postData.replies.forEach(entry => {
+      const normalized = normalizeReply(entry)
+      if (normalized) {
+        replies.push(normalized)
+      }
+    })
+  } else if (postData?.replies && typeof postData.replies === 'object') {
+    Object.values(postData.replies).forEach(entry => {
+      const normalized = normalizeReply(entry)
+      if (normalized) {
+        replies.push(normalized)
+      }
+    })
+  }
+
+  const legacyAnswer = normalizeReply(postData?.answer)
+  if (legacyAnswer && replies.length === 0) {
+    replies.push(legacyAnswer)
+  }
+
+  replies.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+
+  return replies
+}
+
+function getReplyCount(postData) {
+  return getReplyList(postData).length
+}
+
+function buildCabinReplyElement(replyData, currentUsername) {
+  const item = document.createElement('article')
+  item.className = 'cabin-post-reply-item'
+
+  const ownReply =
+    normalizeUserName(replyData?.name) === normalizeUserName(currentUsername)
+  if (ownReply) {
+    item.classList.add('cabin-post-reply-item-own')
+  }
+
+  const message = document.createElement('p')
+  message.className = 'cabin-post-reply-message'
+  setElementTextWithEmojis(message, replyData.message, { size: 16 })
+
+  const meta = document.createElement('p')
+  meta.className = 'cabin-post-reply-meta'
+
+  const author = document.createElement('span')
+  author.className = 'cabin-post-reply-author'
+  author.textContent = ownReply ? 'You' : replyData.name
+
+  const time = document.createElement('span')
+  time.className = 'cabin-post-reply-time'
+  time.textContent = formatTimestamp(replyData.createdAt)
+
+  meta.append(author, time)
+
+  item.append(message, meta)
+  return item
+}
+
+function buildCabinReplyForm({ postId, postData, username, onReplySaved }) {
+  const form = document.createElement('form')
+  form.className = 'cabin-post-reply-form'
+
+  const input = document.createElement('textarea')
+  input.name = 'cabin-reply-message'
+  input.className = 'cabin-post-reply-input'
+  input.maxLength = 180
+  input.required = true
+  input.placeholder = 'Write a reply...'
+
+  const actions = document.createElement('div')
+  actions.className = 'cabin-post-reply-actions'
+
+  const submit = document.createElement('button')
+  submit.type = 'submit'
+  submit.className = 'cabin-post-reply-submit'
+  submit.textContent = 'Reply'
+
+  const status = document.createElement('p')
+  status.className = 'cabin-post-reply-status'
+  status.hidden = true
+
+  actions.append(submit, status)
+  form.append(input, actions)
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault()
+
+    const nameValue = censorBadWords(String(username || '').trim())
+    const messageValue = censorBadWords(input.value.trim())
+
+    if (!nameValue) {
+      status.hidden = false
+      status.textContent = 'You need to be logged in to reply.'
+      return
+    }
+
+    if (!messageValue) {
+      status.hidden = false
+      status.textContent = 'Please enter a reply.'
+      return
+    }
+
+    submit.disabled = true
+    status.hidden = false
+    status.textContent = 'Sending...'
+
+    try {
+      const savedReply = await postReply(postId, messageValue, nameValue)
+      if (!Array.isArray(postData.replies)) {
+        postData.replies = getReplyList(postData)
+      }
+      postData.replies.push(savedReply)
+      input.value = ''
+      status.textContent = 'Reply posted.'
+      onReplySaved()
+    } catch {
+      status.textContent = 'Could not post reply. Try again.'
+    } finally {
+      submit.disabled = false
+    }
+  })
+
+  return form
 }
 
 function showPostForm(contentArea, username, hubContainer, postsList) {
@@ -371,17 +758,9 @@ function showPostForm(contentArea, username, hubContainer, postsList) {
 
   // Back button
   const backBtn = document.createElement('button')
-  backBtn.textContent = '← Back'
   backBtn.type = 'button'
-  backBtn.style.alignSelf = 'flex-start'
-  backBtn.style.padding = '8px 12px'
-  backBtn.style.backgroundColor = '#A0826D'
-  backBtn.style.color = 'white'
-  backBtn.style.border = 'none'
-  backBtn.style.borderRadius = '4px'
-  backBtn.style.cursor = 'pointer'
-  backBtn.style.fontSize = '14px'
-  backBtn.style.marginBottom = '8px'
+  backBtn.className = 'cabin-nav-btn'
+  setPixelButtonContent(backBtn, 'pixel-icon-arrow-left', 'Back')
   backBtn.addEventListener('click', () => {
     formContainer.remove()
     hubContainer.style.display = 'flex'
@@ -429,7 +808,11 @@ function showPostForm(contentArea, username, hubContainer, postsList) {
       const messageValue = censorBadWords(messageInput.value.trim())
 
       await postMessage(messageValue, nameValue, titleValue)
-      form.innerHTML = '<p style="text-align: center; color: green;">Post sent! ✓</p>'
+      form.innerHTML = ''
+      const successMessage = document.createElement('p')
+      successMessage.className = 'cabin-form-success'
+      successMessage.append(createPixelLabel('pixel-icon-check', 'Post sent!'))
+      form.append(successMessage)
       
       setTimeout(() => {
         // Reload the posts list
@@ -453,4 +836,30 @@ function showPostForm(contentArea, username, hubContainer, postsList) {
   // Insert after header
   const header = contentArea.querySelector('.cabin-popup-header')
   header.after(formContainer)
+}
+
+function createPixelLabel(iconClass, text) {
+  const wrapper = document.createElement('span')
+  wrapper.className = 'pixel-inline'
+
+  const icon = document.createElement('span')
+  icon.className = `pixel-icon ${iconClass}`
+  icon.setAttribute('aria-hidden', 'true')
+
+  const label = document.createElement('span')
+  label.textContent = text
+
+  wrapper.append(icon, label)
+  return wrapper
+}
+
+function setPixelButtonContent(button, iconClass, text) {
+  button.replaceChildren(createPixelLabel(iconClass, text))
+}
+
+function updateCabinLikeButton(button, isLiked) {
+  const icon = createReactionIcon('heart', { active: isLiked, size: 18 })
+  const label = document.createElement('span')
+  label.textContent = isLiked ? 'Liked' : 'Like'
+  button.replaceChildren(icon, label)
 }

@@ -1,0 +1,114 @@
+.pixel-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pixel-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  image-rendering: pixelated;
+  flex: 0 0 16px;
+}
+
+.pixel-icon-arrow-left {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='1' y='7' width='14' height='2' fill='%234e341f'/%3E%3Crect x='3' y='5' width='2' height='2' fill='%234e341f'/%3E%3Crect x='1' y='7' width='2' height='2' fill='%234e341f'/%3E%3Crect x='3' y='9' width='2' height='2' fill='%234e341f'/%3E%3Crect x='5' y='3' width='2' height='2' fill='%234e341f'/%3E%3Crect x='5' y='11' width='2' height='2' fill='%234e341f'/%3E%3C/svg%3E");
+}
+
+.pixel-icon-heart-outline {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='3' y='2' width='2' height='2' fill='%23603b45'/%3E%3Crect x='5' y='2' width='1' height='1' fill='%23603b45'/%3E%3Crect x='10' y='2' width='2' height='2' fill='%23603b45'/%3E%3Crect x='9' y='2' width='1' height='1' fill='%23603b45'/%3E%3Crect x='2' y='4' width='1' height='3' fill='%23603b45'/%3E%3Crect x='12' y='4' width='1' height='3' fill='%23603b45'/%3E%3Crect x='3' y='7' width='1' height='2' fill='%23603b45'/%3E%3Crect x='11' y='7' width='1' height='2' fill='%23603b45'/%3E%3Crect x='4' y='9' width='1' height='2' fill='%23603b45'/%3E%3Crect x='10' y='9' width='1' height='2' fill='%23603b45'/%3E%3Crect x='5' y='11' width='1' height='1' fill='%23603b45'/%3E%3Crect x='9' y='11' width='1' height='1' fill='%23603b45'/%3E%3Crect x='6' y='12' width='3' height='1' fill='%23603b45'/%3E%3C/svg%3E");
+}
+
+.pixel-icon-heart-filled {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='3' y='2' width='3' height='3' fill='%23cf5878'/%3E%3Crect x='10' y='2' width='3' height='3' fill='%23cf5878'/%3E%3Crect x='2' y='4' width='12' height='3' fill='%23cf5878'/%3E%3Crect x='3' y='7' width='10' height='2' fill='%23cf5878'/%3E%3Crect x='4' y='9' width='8' height='2' fill='%23cf5878'/%3E%3Crect x='5' y='11' width='6' height='1' fill='%23cf5878'/%3E%3Crect x='6' y='12' width='4' height='1' fill='%23cf5878'/%3E%3Crect x='3' y='2' width='2' height='2' fill='%2372394f'/%3E%3Crect x='10' y='2' width='2' height='2' fill='%2372394f'/%3E%3C/svg%3E");
+}
+
+.pixel-icon-thumb-down {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='3' y='2' width='7' height='2' fill='%235a4335'/%3E%3Crect x='2' y='4' width='8' height='6' fill='%23b88f68'/%3E%3Crect x='10' y='4' width='2' height='5' fill='%235a4335'/%3E%3Crect x='5' y='10' width='2' height='3' fill='%23b88f68'/%3E%3Crect x='7' y='12' width='3' height='2' fill='%235a4335'/%3E%3Crect x='4' y='14' width='3' height='1' fill='%235a4335'/%3E%3C/svg%3E");
+}
+
+/* ── Emoji asset icons ───────────────────────────────────────── */
+
+.emoji-asset-icon {
+  display: inline-block;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+.emoji-sprite-icon {
+  image-rendering: pixelated;
+}
+
+.emoji-heart-inactive {
+  opacity: 0.4;
+}
+
+.emoji-inline-icon {
+  vertical-align: middle;
+  margin: 0 1px;
+}
+
+.emoji-minus-icon {
+  display: inline-block;
+  background: currentColor;
+  height: 3px;
+  border-radius: 2px;
+  align-self: center;
+}
+
+/* ── Emoji picker ─────────────────────────────────────────────── */
+
+.emoji-picker-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.emoji-picker-label {
+  font-size: 0.8rem;
+  color: #5d422a;
+  margin: 0;
+  font-weight: 700;
+}
+
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.emoji-picker-button {
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  padding: 2px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-picker-button:hover {
+  border-color: #4e341f;
+  background: #fff3cc;
+}
+
+/* ── Reaction count next to emoji icon ─────────────────────────── */
+
+.flower-reaction-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── check icon (kept here) ────────────────────────────────────── */
+
+.pixel-icon-check {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='2' y='8' width='2' height='2' fill='%234a7a44'/%3E%3Crect x='4' y='10' width='2' height='2' fill='%234a7a44'/%3E%3Crect x='6' y='8' width='2' height='2' fill='%234a7a44'/%3E%3Crect x='8' y='6' width='2' height='2' fill='%234a7a44'/%3E%3Crect x='10' y='4' width='2' height='2' fill='%234a7a44'/%3E%3Crect x='12' y='2' width='2' height='2' fill='%234a7a44'/%3E%3C/svg%3E");
+}

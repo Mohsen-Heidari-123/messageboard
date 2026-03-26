@@ -39,6 +39,10 @@
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
+.form-wrapper .cancelBtn:hover {
+  background: #ffecc0;
+}
+
 .form-wrapper .cancelBtn:active {
   transform: translateY(2px);
   box-shadow: 0 1px 0 #4d331f;
@@ -99,6 +103,13 @@
 
 .form-wrapper form .sendBtn:active {
   transform: translateY(2px);
+  box-shadow: 0 2px 0 #4d331f;
+}
+
+.form-wrapper form .sendBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
   box-shadow: 0 2px 0 #4d331f;
 }
 
@@ -199,6 +210,33 @@ html.dark-mode .form-wrapper form .sendBtn:active {
 
 html.dark-mode .form-bottom-row > div {
   color: #d6c4ea;
+}
+
+html.dark-mode .emoji-picker-label {
+  color: #d6c4ea;
+}
+
+html.dark-mode .emoji-picker-button:hover {
+  border-color: #e0d0f4;
+  background: rgba(160, 135, 217, 0.2);
+}
+
+.form-send-status {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #3a6e31;
+  text-align: center;
+  margin: 0;
+  min-height: 1.2em;
+}
+
+html.dark-mode .form-send-status {
+  color: #8ecc85;
+}
+
+.emoji-picker-button:focus-visible {
+  outline: 2px solid #4d331f;
+  outline-offset: 2px;
 }
 
 @media (max-width: 600px) {

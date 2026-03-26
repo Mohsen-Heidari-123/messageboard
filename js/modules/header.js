@@ -100,10 +100,6 @@ export const renderHeader = () => {
     }
   })
 
-  const themeToggleSlot = document.createElement('div')
-  themeToggleSlot.className = 'menu-theme-toggle-slot'
-  menuContent.append(themeToggleSlot)
-
   const clearSearchButton = document.createElement('button')
   clearSearchButton.type = 'button'
   clearSearchButton.textContent = 'Show all flowers'
@@ -142,10 +138,6 @@ export const renderHeader = () => {
   const spawnAnimalSlot = document.createElement('div')
   spawnAnimalSlot.className = 'menu-spawn-animal-slot'
   menuContent.append(spawnAnimalSlot)
-
-  const themeCycleSlot = document.createElement('div')
-  themeCycleSlot.className = 'menu-theme-cycle-slot'
-  menuContent.append(themeCycleSlot)
 
   navLinks.forEach(({ label, href }) => {
     // On small screens, keep nav clouds focused on the primary action.

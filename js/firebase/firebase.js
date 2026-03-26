@@ -134,6 +134,7 @@ export const postReply = async (postId, message, name) => {
   const replyPayload = {
     name,
     message,
+    createdAt: Date.now(),
     likes: 0,
     dislikes: 0
   }
@@ -263,25 +264,48 @@ export const getUserPosts = async username => {
 // Get user's liked posts
 export const getUserLikedPosts = async username => {
   try {
-    const response = await fetch(
-      `${usersUrl}/${encodeURIComponent(username)}.json`
+    const likedPostsResponse = await fetch(
+      `${usersUrl}/${encodeURIComponent(username)}/liked-posts.json`
     )
-    if (!response.ok) throw new Error(response.status)
-    const user = await response.json()
+    if (!likedPostsResponse.ok) throw new Error(likedPostsResponse.status)
+    const likedPostIds = (await likedPostsResponse.json()) || {}
 
-    if (!user || !user['liked-posts']) return {}
+    const postIds = Object.keys(likedPostIds)
+    if (postIds.length === 0) return {}
 
-    // Fetch all messages to get full post data
-    const messagesResponse = await fetch(url)
-    if (!messagesResponse.ok) throw new Error(messagesResponse.status)
-    const allMessages = await messagesResponse.json()
+    let allMessages = {}
+    try {
+      const messagesResponse = await fetch(url)
+      if (messagesResponse.ok) {
+        allMessages = (await messagesResponse.json()) || {}
+      }
+    } catch {
+      allMessages = {}
+    }
 
     const likedPosts = {}
-    Object.keys(user['liked-posts']).forEach(postId => {
-      if (allMessages[postId]) {
+
+    for (const postId of postIds) {
+      if (allMessages?.[postId]) {
         likedPosts[postId] = allMessages[postId]
+        continue
       }
-    })
+
+      // Fallback: fetch each liked post directly if bulk fetch is unavailable.
+      try {
+        const singlePostResponse = await fetch(
+          `${messagesBaseUrl}/${encodeURIComponent(postId)}.json`
+        )
+        if (!singlePostResponse.ok) continue
+
+        const singlePostData = await singlePostResponse.json()
+        if (singlePostData) {
+          likedPosts[postId] = singlePostData
+        }
+      } catch {
+        // Ignore individual post failures and continue.
+      }
+    }
 
     return likedPosts
   } catch (error) {
@@ -299,7 +323,7 @@ export const likePost = async (username, postId) => {
       )}/liked-posts/${encodeURIComponent(postId)}.json`,
       {
         method: 'PUT',
-        body: JSON.stringify({}),
+        body: JSON.stringify(true),
         headers: { 'Content-type': 'application/json; charset=UTF-8' }
       }
     )
@@ -337,14 +361,16 @@ export const unlikePost = async (username, postId) => {
 // Update post like count
 export const updatePostLikes = async (postId, increment) => {
   try {
-    const response = await fetch(`${url}/${encodeURIComponent(postId)}.json`)
+    const response = await fetch(
+      `${messagesBaseUrl}/${encodeURIComponent(postId)}.json`
+    )
     if (!response.ok) throw new Error(response.status)
     const post = await response.json()
 
-    const newLikes = (post.likes || 0) + increment
+    const newLikes = Math.max((post?.likes || 0) + increment, 0)
 
     const updateResponse = await fetch(
-      `${url}/${encodeURIComponent(postId)}/likes.json`,
+      `${messagesBaseUrl}/${encodeURIComponent(postId)}/likes.json`,
       {
         method: 'PUT',
         body: JSON.stringify(newLikes),

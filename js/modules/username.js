@@ -128,7 +128,11 @@ async function ensureTermsAccepted () {
     return true
   }
 
-  // Always show Terms modal after each login.
+  if (hasAcceptedTerms(username)) {
+    return true
+  }
+
+  // Show Terms only once per username unless localStorage is cleared.
   const accepted = await showTermsPopup(username)
   return accepted
 }
