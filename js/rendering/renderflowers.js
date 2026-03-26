@@ -2,14 +2,19 @@ import {
   postReply,
   deleteMessagebyId,
   isUserAdmin,
-  disLikeMessage,
+  dislikePost,
+  undislikePost,
   likePost,
   unlikePost,
-  getUserLikedPosts
+  getUserLikedPosts,
+  getUserDislikedPosts
 } from '../firebase/firebase.js'
 import { censorBadWords } from '../modules/censor.js'
 import { getUsername } from '../modules/username.js'
-import { createReactionIcon, setElementTextWithEmojis } from '../modules/emojis.js'
+import {
+  createReactionIcon,
+  setElementTextWithEmojis
+} from '../modules/emojis.js'
 
 const isInSitesFolder = () =>
   window.location.pathname.toLowerCase().includes('/sites/')
@@ -38,7 +43,7 @@ const DARK_FLOWER_IMAGES = [
   `${basePath}/Darkflower6.png`
 ]
 
-function isDarkThemeActive() {
+function isDarkThemeActive () {
   const html = document.documentElement
   return (
     html.getAttribute('data-theme') === 'dark' ||
@@ -46,15 +51,15 @@ function isDarkThemeActive() {
   )
 }
 
-function getFlowerImagesForCurrentTheme() {
+function getFlowerImagesForCurrentTheme () {
   return isDarkThemeActive() ? DARK_FLOWER_IMAGES : LIGHT_FLOWER_IMAGES
 }
 
-function getDefaultFlowerImage() {
+function getDefaultFlowerImage () {
   return getFlowerImagesForCurrentTheme()[0]
 }
 
-function getFlowerImageForSeed(images, seedValue) {
+function getFlowerImageForSeed (images, seedValue) {
   if (!Array.isArray(images) || images.length === 0) {
     return getDefaultFlowerImage()
   }
@@ -63,7 +68,7 @@ function getFlowerImageForSeed(images, seedValue) {
   return images[seed % images.length]
 }
 
-function extractFlowerVariantNumber(src) {
+function extractFlowerVariantNumber (src) {
   const match = src.match(/(Lightflower|Darkflower)(\d+)\.png/i)
   if (!match) {
     return null
@@ -72,7 +77,7 @@ function extractFlowerVariantNumber(src) {
   return Number(match[2])
 }
 
-export function syncRenderedFlowerTheme() {
+export function syncRenderedFlowerTheme () {
   const garden =
     document.getElementById('garden') ??
     document.querySelector('.garden-wrapper')
@@ -101,11 +106,11 @@ export function syncRenderedFlowerTheme() {
   })
 }
 
-function clamp(value, min, max) {
+function clamp (value, min, max) {
   return Math.min(Math.max(value, min), max)
 }
 
-function hashString(value) {
+function hashString (value) {
   let hash = 0
   for (let i = 0; i < value.length; i++) {
     hash = (hash * 31 + value.charCodeAt(i)) >>> 0
@@ -113,7 +118,7 @@ function hashString(value) {
   return hash
 }
 
-function getFixedFlowerPosition(garden, seedValue) {
+function getFixedFlowerPosition (garden, seedValue) {
   const maxLeft = Math.max(garden.clientWidth - FLOWER_SIZE, 0)
   const maxTop = Math.max(garden.clientHeight - FLOWER_SIZE, 0)
   const seed = hashString(seedValue)
@@ -127,7 +132,7 @@ function getFixedFlowerPosition(garden, seedValue) {
   }
 }
 
-function isOverlappingFlowers(left, top, existingFlowers) {
+function isOverlappingFlowers (left, top, existingFlowers) {
   const right = left + FLOWER_SIZE
   const bottom = top + FLOWER_SIZE
 
@@ -144,14 +149,14 @@ function isOverlappingFlowers(left, top, existingFlowers) {
   })
 }
 
-function getExistingFlowerPositions(garden) {
+function getExistingFlowerPositions (garden) {
   return Array.from(garden.querySelectorAll('.garden-flower')).map(flower => ({
     left: parseFloat(flower.style.left || '0'),
     top: parseFloat(flower.style.top || '0')
   }))
 }
 
-function findNonOverlappingPosition(garden, preferredPosition, positionSeed) {
+function findNonOverlappingPosition (garden, preferredPosition, positionSeed) {
   const maxLeft = Math.max(garden.clientWidth - FLOWER_SIZE, 0)
   const maxTop = Math.max(garden.clientHeight - FLOWER_SIZE, 0)
   const existingFlowers = getExistingFlowerPositions(garden)
@@ -186,7 +191,7 @@ function findNonOverlappingPosition(garden, preferredPosition, positionSeed) {
   return { left: preferredLeft, top: preferredTop }
 }
 
-function getStoredFlowerPositions() {
+function getStoredFlowerPositions () {
   try {
     const raw = window.localStorage.getItem(FLOWER_POSITIONS_STORAGE_KEY)
     if (!raw) {
@@ -204,7 +209,7 @@ function getStoredFlowerPositions() {
   return {}
 }
 
-function getStoredReadState() {
+function getStoredReadState () {
   try {
     const raw = window.localStorage.getItem(FLOWER_READ_STATE_STORAGE_KEY)
     if (!raw) {
@@ -222,7 +227,7 @@ function getStoredReadState() {
   return {}
 }
 
-function getReadVersion(postId) {
+function getReadVersion (postId) {
   if (!postId) {
     return 0
   }
@@ -232,7 +237,7 @@ function getReadVersion(postId) {
   return typeof version === 'number' ? version : 0
 }
 
-function setReadVersion(postId, version) {
+function setReadVersion (postId, version) {
   if (!postId) {
     return
   }
@@ -245,7 +250,7 @@ function setReadVersion(postId, version) {
   )
 }
 
-function getSavedFlowerPosition(positionSeed) {
+function getSavedFlowerPosition (positionSeed) {
   const positions = getStoredFlowerPositions()
   const saved = positions[positionSeed]
 
@@ -260,7 +265,7 @@ function getSavedFlowerPosition(positionSeed) {
   return saved
 }
 
-function saveFlowerPosition(positionSeed, left, top) {
+function saveFlowerPosition (positionSeed, left, top) {
   const positions = getStoredFlowerPositions()
   positions[positionSeed] = { left, top }
   window.localStorage.setItem(
@@ -269,7 +274,7 @@ function saveFlowerPosition(positionSeed, left, top) {
   )
 }
 
-function resolveFlowerPosition(garden, positionSeed) {
+function resolveFlowerPosition (garden, positionSeed) {
   const maxLeft = Math.max(garden.clientWidth - FLOWER_SIZE, 0)
   const maxTop = Math.max(garden.clientHeight - FLOWER_SIZE, 0)
   const savedPosition = getSavedFlowerPosition(positionSeed)
@@ -300,7 +305,7 @@ function resolveFlowerPosition(garden, positionSeed) {
   }
 }
 
-function enableFlowerDragging(flower, garden, onDragEnd = null) {
+function enableFlowerDragging (flower, garden, onDragEnd = null) {
   let pointerId = null
   let startPointerX = 0
   let startPointerY = 0
@@ -342,7 +347,7 @@ function enableFlowerDragging(flower, garden, onDragEnd = null) {
     flower.style.top = `${clamp(startTop + deltaY, 0, maxTop)}px`
   })
 
-  function finishDrag(event) {
+  function finishDrag (event) {
     if (pointerId !== event.pointerId) {
       return
     }
@@ -371,7 +376,7 @@ function enableFlowerDragging(flower, garden, onDragEnd = null) {
   }
 }
 
-function normalizeReply(reply) {
+function normalizeReply (reply) {
   if (!reply) {
     return null
   }
@@ -407,7 +412,7 @@ function normalizeReply(reply) {
   return null
 }
 
-function getReplyList(data) {
+function getReplyList (data) {
   const replies = []
 
   if (Array.isArray(data?.replies)) {
@@ -436,7 +441,7 @@ function getReplyList(data) {
   return replies
 }
 
-function getThreadVersion(data) {
+function getThreadVersion (data) {
   if (!data || typeof data !== 'object') {
     return 0
   }
@@ -450,7 +455,7 @@ function getThreadVersion(data) {
   return 1 + getReplyList(data).length
 }
 
-function hasUnreadContent(postId, data) {
+function hasUnreadContent (postId, data) {
   if (!postId) {
     return false
   }
@@ -458,7 +463,7 @@ function hasUnreadContent(postId, data) {
   return getThreadVersion(data) > getReadVersion(postId)
 }
 
-function buildReplyElement(replyData) {
+function buildReplyElement (replyData) {
   const replyBlock = document.createElement('section')
   replyBlock.className = 'flower-popup-reply'
 
@@ -478,7 +483,7 @@ function buildReplyElement(replyData) {
   return replyBlock
 }
 
-function buildReplyForm({ postId, data, onReplySaved }) {
+function buildReplyForm ({ postId, data, onReplySaved }) {
   const form = document.createElement('form')
   form.className = 'flower-popup-reply-form'
 
@@ -543,13 +548,13 @@ function buildReplyForm({ postId, data, onReplySaved }) {
   return form
 }
 
-function normalizeUserName(value) {
+function normalizeUserName (value) {
   return String(value || '')
     .trim()
     .toLowerCase()
 }
 
-function canDeleteAsOwner(data, currentUsername) {
+function canDeleteAsOwner (data, currentUsername) {
   if (!data) {
     return false
   }
@@ -557,7 +562,7 @@ function canDeleteAsOwner(data, currentUsername) {
   return normalizeUserName(data.name) === normalizeUserName(currentUsername)
 }
 
-function appendDeleteButton({ box, overlay, postId, data }) {
+function appendDeleteButton ({ box, overlay, postId, data }) {
   const username = getUsername().trim()
   if (!postId || !username) {
     return
@@ -625,10 +630,10 @@ function appendDeleteButton({ box, overlay, postId, data }) {
         mountDeleteControls({ fromAdmin: true })
       }
     })
-    .catch(() => { })
+    .catch(() => {})
 }
 
-export function renderFlower(
+export function renderFlower (
   imageSrc = getDefaultFlowerImage(),
   data = null,
   positionSeed = 'flower-default',
@@ -695,7 +700,7 @@ export function renderFlower(
   return flower
 }
 
-function openFlowerPopup(imageSrc, data, postId) {
+function openFlowerPopup (imageSrc, data, postId) {
   const existing = document.getElementById('flower-popup')
   if (existing) {
     existing.remove()
@@ -739,15 +744,22 @@ function openFlowerPopup(imageSrc, data, postId) {
     }
     const currentUser = getUsername().trim()
     const isOwnPost = Boolean(currentUser) && data?.name === currentUser
+    const reactionActions = document.createElement('div')
+    reactionActions.className = 'flower-popup-actions'
+    let hasReactionActions = false
+    let isLiked = false
+    let isDisliked = false
+
+    let renderLikeLabel = () => {}
+    let renderDislikeLabel = () => {}
 
     if (data.likes !== undefined && !isOwnPost && currentUser) {
       const existingLike = box.querySelector('.flower-like-btn')
       if (existingLike) existingLike.remove()
       const like = document.createElement('button')
       like.className = 'flower-like-btn'
-      let isLiked = false
 
-      const renderLikeLabel = () => {
+      renderLikeLabel = () => {
         const likes = Math.max(data?.likes || 0, 0)
         like.replaceChildren(
           createReactionIcon('heart', { active: isLiked, size: 18 }),
@@ -756,6 +768,8 @@ function openFlowerPopup(imageSrc, data, postId) {
             textContent: String(likes)
           })
         )
+
+        like.classList.toggle('is-active', isLiked)
       }
 
       renderLikeLabel()
@@ -777,6 +791,13 @@ function openFlowerPopup(imageSrc, data, postId) {
             data.likes = Math.max((data?.likes || 0) - 1, 0)
             isLiked = false
           } else {
+            if (isDisliked) {
+              await undislikePost(currentUser, postId)
+              data.dislikes = Math.max((data?.dislikes || 0) - 1, 0)
+              isDisliked = false
+              renderDislikeLabel()
+            }
+
             await likePost(currentUser, postId)
             data.likes = (data?.likes || 0) + 1
             isLiked = true
@@ -788,33 +809,77 @@ function openFlowerPopup(imageSrc, data, postId) {
         }
       })
 
-      box.append(like)
+      reactionActions.append(like)
+      hasReactionActions = true
     }
-    if (data.dislikes !== undefined) {
+    if (data.dislikes !== undefined && !isOwnPost && currentUser) {
       const existingLike = box.querySelector('.flower-dislike-btn')
       if (existingLike) existingLike.remove()
       const dislike = document.createElement('button')
       dislike.className = 'flower-dislike-btn'
-      const renderDislikeLabel = () => {
+
+      renderDislikeLabel = () => {
         dislike.replaceChildren(
-          createReactionIcon('dislike', { size: 18 }),
+          createReactionIcon('dislike', { active: isDisliked, size: 18 }),
           Object.assign(document.createElement('span'), {
             className: 'flower-reaction-count',
             textContent: String(data.dislikes || 0)
           })
         )
+
+        dislike.classList.toggle('is-active', isDisliked)
+
+        dislike.setAttribute(
+          'aria-label',
+          isDisliked ? 'Remove dislike from message' : 'Dislike message'
+        )
       }
 
       renderDislikeLabel()
 
-      dislike.addEventListener('click', e => {
+      getUserDislikedPosts(currentUser)
+        .then(dislikedPosts => {
+          isDisliked = Boolean(dislikedPosts?.[postId])
+          renderDislikeLabel()
+        })
+        .catch(() => {
+          renderDislikeLabel()
+        })
+
+      dislike.addEventListener('click', async e => {
         e.preventDefault()
-        disLikeMessage(postId, data.dislikes)
-        data.dislikes += 1
-        renderDislikeLabel()
+
+        try {
+          if (isDisliked) {
+            await undislikePost(currentUser, postId)
+            data.dislikes = Math.max((data?.dislikes || 0) - 1, 0)
+            isDisliked = false
+          } else {
+            if (isLiked) {
+              await unlikePost(currentUser, postId)
+              data.likes = Math.max((data?.likes || 0) - 1, 0)
+              isLiked = false
+              renderLikeLabel()
+            }
+
+            await dislikePost(currentUser, postId)
+            data.dislikes = (data?.dislikes || 0) + 1
+            isDisliked = true
+          }
+
+          renderDislikeLabel()
+        } catch (error) {
+          console.error('Error toggling dislike:', error)
+        }
       })
-      box.append(dislike)
+      reactionActions.append(dislike)
+      hasReactionActions = true
     }
+
+    if (hasReactionActions) {
+      box.append(reactionActions)
+    }
+
     if (data.message) {
       const message = document.createElement('p')
       message.className = 'flower-popup-message'
@@ -851,7 +916,7 @@ function openFlowerPopup(imageSrc, data, postId) {
   document.body.append(overlay)
 }
 
-export function renderFlowers(data = null) {
+export function renderFlowers (data = null) {
   const garden =
     document.getElementById('garden') ??
     document.querySelector('.garden-wrapper')
@@ -864,8 +929,8 @@ export function renderFlowers(data = null) {
   const entries = data
     ? Object.entries(data)
     : new Array(12)
-      .fill(null)
-      .map((entry, index) => [`placeholder-${index}`, entry])
+        .fill(null)
+        .map((entry, index) => [`placeholder-${index}`, entry])
 
   entries.forEach(([entryKey, entry]) => {
     const randomImage = getFlowerImageForSeed(flowerImages, entryKey)

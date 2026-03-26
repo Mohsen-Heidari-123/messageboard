@@ -32,7 +32,10 @@ export const heartEmojiDefinition = {
   type: 'heart'
 }
 
-export const postEmojiDefinitions = [...spriteEmojiDefinitions, heartEmojiDefinition]
+export const postEmojiDefinitions = [
+  ...spriteEmojiDefinitions,
+  heartEmojiDefinition
+]
 
 const emojiDefinitionMap = new Map(
   postEmojiDefinitions.map(definition => [definition.token, definition])
@@ -46,22 +49,24 @@ const emojiTokenPattern = new RegExp(
   'g'
 )
 
-function escapeForRegExp(value) {
+function escapeForRegExp (value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-function setSpriteBackground(element, definition) {
+function setSpriteBackground (element, definition) {
   const positionX =
     SPRITE_COLUMNS === 1 ? 0 : (definition.column / (SPRITE_COLUMNS - 1)) * 100
   const positionY =
     SPRITE_ROWS === 1 ? 0 : (definition.row / (SPRITE_ROWS - 1)) * 100
 
   element.style.backgroundImage = `url('${spriteSheetPath}')`
-  element.style.backgroundSize = `${SPRITE_COLUMNS * 100}% ${SPRITE_ROWS * 100}%`
+  element.style.backgroundSize = `${SPRITE_COLUMNS * 100}% ${
+    SPRITE_ROWS * 100
+  }%`
   element.style.backgroundPosition = `${positionX}% ${positionY}%`
 }
 
-export function createEmojiVisual(definition, options = {}) {
+export function createEmojiVisual (definition, options = {}) {
   const icon = document.createElement('span')
   icon.className = 'emoji-asset-icon'
 
@@ -90,7 +95,7 @@ export function createEmojiVisual(definition, options = {}) {
   return icon
 }
 
-export function createReactionIcon(kind, options = {}) {
+export function createReactionIcon (kind, options = {}) {
   const size = options.size || 18
 
   if (kind === 'heart') {
@@ -104,6 +109,9 @@ export function createReactionIcon(kind, options = {}) {
   if (kind === 'dislike') {
     const icon = document.createElement('span')
     icon.className = 'emoji-asset-icon emoji-reaction-icon'
+    if (options.active) {
+      icon.classList.add('emoji-dislike-active')
+    }
     icon.style.width = `${size}px`
     icon.style.height = `${size}px`
     icon.style.backgroundImage = `url('${brokenHeartEmojiPath}')`
@@ -122,7 +130,7 @@ export function createReactionIcon(kind, options = {}) {
   return minus
 }
 
-export function createEmojiPicker(onSelect) {
+export function createEmojiPicker (onSelect) {
   const picker = document.createElement('div')
   picker.className = 'emoji-picker'
 
@@ -143,12 +151,12 @@ export function createEmojiPicker(onSelect) {
   return picker
 }
 
-export function getEmojiAwareLength(text) {
+export function getEmojiAwareLength (text) {
   const normalized = String(text || '').replace(emojiTokenPattern, 'x')
   return Array.from(normalized).length
 }
 
-export function insertEmojiTokenAtSelection(textarea, token, maxLength) {
+export function insertEmojiTokenAtSelection (textarea, token, maxLength) {
   if (!textarea || !token) {
     return false
   }
@@ -172,7 +180,7 @@ export function insertEmojiTokenAtSelection(textarea, token, maxLength) {
   return true
 }
 
-export function createRichTextFragment(text, options = {}) {
+export function createRichTextFragment (text, options = {}) {
   const fragment = document.createDocumentFragment()
   const rawText = String(text || '')
 
@@ -211,7 +219,7 @@ export function createRichTextFragment(text, options = {}) {
   return fragment
 }
 
-export function setElementTextWithEmojis(element, text, options = {}) {
+export function setElementTextWithEmojis (element, text, options = {}) {
   if (!element) {
     return
   }

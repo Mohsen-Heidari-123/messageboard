@@ -48,6 +48,10 @@
   opacity: 0.4;
 }
 
+.emoji-dislike-active {
+  filter: saturate(1.45) brightness(1.05) drop-shadow(0 0 1px rgba(114, 22, 22, 0.7));
+}
+
 .emoji-inline-icon {
   vertical-align: middle;
   margin: 0 1px;
