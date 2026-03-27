@@ -2,8 +2,8 @@ import {
   createEmojiPicker,
   getEmojiAwareLength,
   insertEmojiTokenAtSelection
-} from './emojis.js'
-import { getUsername } from './username.js'
+} from '../emojis.js'
+import { getUsername } from '../username.js'
 
 const maxMessageLength = 100
 const internalMessageLimit = 800
@@ -60,7 +60,7 @@ export function createFormElements () {
   bottomRow.append(button, charCount, emojiPickerPanel)
 
   form.append(title, message, name, sendStatus, bottomRow)
-  wrapper.append(cancelBtn, emojiPickerPanel, form)
+  wrapper.append(cancelBtn, form)
 
   return {
     wrapper,

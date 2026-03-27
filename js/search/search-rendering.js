@@ -1,5 +1,5 @@
-import { getAll } from '../../firebase/firebase.js'
-import { renderFlowers } from '../../rendering/renderflowers.js'
+import { getAll } from '../firebase/firebase.js'
+import { renderFlowers } from '../rendering/renderflowers.js'
 
 function getGarden () {
   return (
