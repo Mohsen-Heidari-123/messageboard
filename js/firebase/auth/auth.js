@@ -1,4 +1,4 @@
-import { usersUrl } from './core.js'
+import { usersUrl } from '../core.js'
 
 export const registerUser = async (username, password) => {
   const checkResponse = await fetch(

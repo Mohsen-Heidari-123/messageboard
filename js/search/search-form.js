@@ -1,4 +1,4 @@
-import { getAll } from '../../firebase/firebase.js'
+import { getAll } from '../firebase/firebase.js'
 import { renderSearchResults, clearSearchMessage } from './search-rendering.js'
 
 function getSearchMount () {

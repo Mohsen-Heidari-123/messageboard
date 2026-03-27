@@ -1,11 +1,6 @@
 import { LIGHT_THEME, DARK_THEME, getSavedTheme } from './theme-persistence.js'
 import { SLOW_TRANSITION_MS, applyTheme } from './theme-transitions.js'
-import {
-  ensureAudioTracks,
-  playThemeTrack,
-  toggleSoundMute,
-  startUserGestureUnlock
-} from './audio-management.js'
+import { ensureAudioTracks, playThemeTrack } from './audio-management.js'
 import {
   toggleRainOverlay,
   getRainEnabled,

@@ -19,6 +19,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 export const db = getDatabase(app)
+export { ref, onValue }
 
 export const messagesUrl =
   'https://messageboard-77286-default-rtdb.europe-west1.firebasedatabase.app/messages.json'
